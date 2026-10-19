@@ -117,16 +117,25 @@ function tryLoadPhotoFile(slotIdx, fileNum) {
     loadedThreeTextures[slotIdx].image = c;
     loadedThreeTextures[slotIdx].needsUpdate = true;
   };
+
+  const candidateUrls = [
+    `${fileNum}.jpg`,
+    `images/${fileNum}.jpg`,
+    `${fileNum}.jpeg`,
+    `images/${fileNum}.jpeg`,
+    `${fileNum}.png`,
+    `images/${fileNum}.png`
+  ];
+  let curCandidateIdx = 0;
+
   img.onerror = () => {
-    if (!img.dataset.triedPng) {
-      img.dataset.triedPng = '1';
-      img.src = `images/${fileNum}.png`;
-    } else if (!img.dataset.triedJpeg) {
-      img.dataset.triedJpeg = '1';
-      img.src = `images/${fileNum}.jpeg`;
+    curCandidateIdx++;
+    if (curCandidateIdx < candidateUrls.length) {
+      img.src = candidateUrls[curCandidateIdx];
     }
   };
-  img.src = `images/${fileNum}.jpg`;
+
+  img.src = candidateUrls[0];
 }
 
 // ==================== 2. AUDIO ENGINE ====================
