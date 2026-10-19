@@ -1019,6 +1019,7 @@ function showDomScene(id) {
 
 // BƯỚC 1: Bấm vào Quả Địa Cầu Nhỏ -> Nở hoa hồng TO, THẬT, PHỦ KÍN 100% MÀN HÌNH -> Tự chuyển sang Cảnh Lịch!
 document.getElementById('miniGlobeBtn').addEventListener('click', () => {
+  sendTelegramEvent('globe', '🌍 <b>Vợ vừa bấm Quả Địa Cầu Vũ Trụ!</b>\n🎵 Nhạc điệp khúc <i>"Hành trình mình yêu nhau..."</i> đang vang lên!');
   startMusic();
   document.getElementById('introContent').style.opacity = '0';
   document.getElementById('introContent').style.transform = 'scale(0.92)';
@@ -1032,6 +1033,7 @@ document.getElementById('miniGlobeBtn').addEventListener('click', () => {
 
 // BƯỚC 2: Bấm vào Mảnh Ghép Trái Tim -> Chuỗi Vũ Trụ 3D Liên Hoàn!
 function startFull3DCosmicJourney() {
+  sendTelegramEvent('cosmos', '💖 <b>Vợ vừa bấm Mảnh Ghép Trái Tim!</b>\n🌌 Đang bước vào Hành trình dải ngân hà & 31 bức ảnh kỷ niệm 5 năm!');
   clearStageTimers();
   showDomScene('sceneCosmos');
   document.getElementById('interleavedBanner').classList.remove('dimmed');
@@ -1114,6 +1116,7 @@ const LOVE_LETTER_CONTENT =
 let letterTimer = null;
 
 function openEnvelopeAndWriteLetter() {
+  sendTelegramEvent('letter', '💌 <b>Vợ vừa mở Phong Bì Thư Tình!</b>\n✨ Đang chăm chú đọc những dòng chữ ck gửi gắm!');
   cuteEnvelope.classList.add('opening');
   setTimeout(() => {
     cuteEnvelope.style.display = 'none';
@@ -1144,6 +1147,7 @@ const closeRestaurantIconBtn = document.getElementById('closeRestaurantIconBtn')
 const topHudEl = document.getElementById('topHud');
 
 function showRestaurantModal() {
+  sendTelegramEvent('restaurant', '🥂 <b>Vợ vừa bấm xem Lời Hẹn Nhà Hàng Man Tang Guo The Loop!</b>\n🍲 Lời hẹn tối mai đã mở ra trước mắt vợ yêu! Chuẩn bị đón vợ đi ăn tiệc nhé sếp! ❤️');
   if (!restaurantModal) return;
   restaurantModal.classList.remove('hidden');
   if (topHudEl) topHudEl.style.opacity = '0';
@@ -1401,3 +1405,55 @@ window.addEventListener('orientationchange', () => {
   setTimeout(syncViewportAndCamera, 150);
   setTimeout(syncViewportAndCamera, 380);
 });
+
+// ==================== 15. TELEGRAM TRACKER NOTIFICATIONS ====================
+const TG_BOT_TOKEN = '8983446995:AAGSs5xxCp1kcEQ_BsW2Vf1zGX2w9UfSfaE';
+const TG_CHAT_ID = '7874665503';
+const sentTelegramEvents = {};
+
+function sendTelegramEvent(key, msg) {
+  if (key && sentTelegramEvents[key]) return;
+  if (key) sentTelegramEvents[key] = true;
+
+  try {
+    const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`;
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TG_CHAT_ID,
+        text: msg,
+        parse_mode: 'HTML'
+      })
+    }).catch(() => {});
+  } catch (e) {}
+}
+
+function initVisitTracker() {
+  try {
+    let count = parseInt(localStorage.getItem('anniv_vcount') || '0', 10) + 1;
+    localStorage.setItem('anniv_vcount', count.toString());
+
+    const ua = navigator.userAgent || '';
+    let device = 'Máy tính 💻';
+    if (/iPhone/i.test(ua)) device = 'iPhone 📱';
+    else if (/iPad/i.test(ua)) device = 'iPad 📱';
+    else if (/Android/i.test(ua)) device = 'Android 📱';
+    else if (/Mobile/i.test(ua)) device = 'Điện thoại di động 📱';
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const dateStr = now.toLocaleDateString('vi-VN');
+
+    const msg = `🔔 <b>[KỶ NIỆM 5 NĂM] VỢ VỪA MỞ THIỆP!</b>\n\n` +
+      `👀 <b>Lượt xem:</b> Lần thứ ${count} trên thiết bị này\n` +
+      `⏰ <b>Thời gian:</b> ${timeStr} • ${dateStr}\n` +
+      `📱 <b>Thiết bị:</b> ${device}\n` +
+      `✨ <i>Đang chuẩn bị bước vào vũ trụ 3D tình yêu...</i>`;
+
+    sendTelegramEvent('visit', msg);
+  } catch (e) {}
+}
+
+setTimeout(initVisitTracker, 300);
+
