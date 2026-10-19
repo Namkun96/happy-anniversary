@@ -8,7 +8,7 @@
  * 3. Đoạn Ảnh Chạy Màn Hình Lõm: Gọn gàng, rõ nét, xếp thành 3 hàng ngang đều đặn trên 1 vòng cung MÀN HÌNH LÕM (hai bên cong gần, chính giữa lõm sâu vào trong) và chạy mượt theo 1 hướng duy nhất TỪ TRÁI QUA PHẢI.
  */
 
-const TOTAL_PHOTOS = 31;
+const TOTAL_PHOTOS = 49;
 
 const INTERLEAVED_MESSAGES = [
   {
@@ -1033,7 +1033,7 @@ document.getElementById('miniGlobeBtn').addEventListener('click', () => {
 
 // BƯỚC 2: Bấm vào Mảnh Ghép Trái Tim -> Chuỗi Vũ Trụ 3D Liên Hoàn!
 function startFull3DCosmicJourney() {
-  sendTelegramEvent('cosmos', '💖 <b>Vợ vừa bấm Mảnh Ghép Trái Tim!</b>\n🌌 Đang bước vào Hành trình dải ngân hà & 31 bức ảnh kỷ niệm 5 năm!');
+  sendTelegramEvent('cosmos', '💖 <b>Vợ vừa bấm Mảnh Ghép Trái Tim!</b>\n🌌 Đang bước vào Hành trình dải ngân hà & 49 bức ảnh kỷ niệm 5 năm!');
   clearStageTimers();
   showDomScene('sceneCosmos');
   document.getElementById('interleavedBanner').classList.remove('dimmed');
