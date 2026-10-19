@@ -1253,7 +1253,7 @@ const LOVE_LETTER_CONTENT =
   '✨ Chúc mừng nửa thập kỷ của chúng ta!\n' +
   '💖 Ck yêu vk rất nhiều.\n' +
   '🌸 Cảm ơn vk vì đã luôn bên ck, dịu dàng và bao dung suốt 5 năm qua.\n' +
-  '♾️ Chúng ta sẽ mãi bên nhau, nắm chặt tay nhau yêu say đắm như ngày đầu, vk yêu nhé!';
+  '♾️ Chúng ta sẽ mãi bên nhau, nắm chặt tay nhau dù cho có bất cứ chuyện gì xảy ra vk nhé!';
 
 let letterTimer = null;
 
