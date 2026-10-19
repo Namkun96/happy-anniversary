@@ -1132,9 +1132,9 @@ html, body {
 
   /* Cảnh 3-6: Banner & Lá Thư trên điện thoại dọc */
   .interleaved-banner {
-    top: 46px;
-    width: 94vw;
-    padding: 8px 12px;
+    top: 40px;
+    width: 90vw;
+    padding: 6px 12px;
     border-radius: 14px;
   }
   .banner-step {

@@ -673,14 +673,14 @@ function syncViewportAndCamera() {
   camera.aspect = aspect;
 
   if (aspect < 0.85) {
-    // Điện thoại cầm dọc: tiến gần hơn một chút để Quả Địa Cầu 3D và chữ to rõ, nổi bật giữa màn hình
-    camera.position.set(0, -14, Math.min(620, Math.round(305 / Math.max(0.44, aspect))));
+    // Điện thoại cầm dọc: Nâng camera Y lên +26 để đẩy Quả Địa Cầu và các cảnh 3D xuống dưới, cách xa dòng chữ trên hoàn toàn không lo bị che!
+    camera.position.set(0, 26, Math.min(640, Math.round(315 / Math.max(0.44, aspect))));
   } else if (H < 540 && aspect > 1.1) {
     // Điện thoại xoay ngang
-    camera.position.set(0, -8, 425);
+    camera.position.set(0, 10, 425);
   } else {
     // Máy tính / Tablet lớn
-    camera.position.set(0, 0, 398);
+    camera.position.set(0, 16, 398);
   }
 
   camera.updateProjectionMatrix();
@@ -984,6 +984,7 @@ function buildGlobeAndConcaveCards() {
     card.userData = {
       row: r,
       col: c,
+      photoIndex: i % TOTAL_PHOTOS,
       // Tiến trình ban đầu dọc theo vòng cung [0..1]
       progress: c / ARC_COLS,
       // Dùng cho cảnh Thả rơi đung đưa
@@ -1054,16 +1055,16 @@ function startFull3DCosmicJourney() {
   globeGroup.rotation.set(0, 0, 0);
   concaveArcGroup.visible = false;
 
-  // --- GIAI ĐOẠN B (~6.2 GIÂY): ẢNH CHẠY TỪ NGOÀI VÀO TÂM & CHỤM THÀNH QUẢ ĐỊA CẦU SÁT KÍN ---
+  // --- GIAI ĐOẠN B (~10.8 GIÂY): ẢNH CHỤM THÀNH QUẢ ĐỊA CẦU SÁT KÍN & QUAY ĐỦ 360 ĐỘ HIỂN THỊ ĐỦ 100% TẤT CẢ 49 ẢNH ---
   stageTimers.push(
     setTimeout(() => {
       currentPhase = 'converge_globe';
       phaseStartTime = performance.now();
       textOrbitGroup.visible = false;
-    }, 5800)
+    }, 5200)
   );
 
-  // --- GIAI ĐOẠN C (~6.5 GIÂY): BUNG RA & CHẠY THEO 1 HƯỚNG TỪ TRÁI QUA PHẢI HÌNH VÒNG CUNG, GIỮA LÕM VÀO ---
+  // --- GIAI ĐOẠN C (~15 GIÂY): BUNG RA MÀN HÌNH LÕM VÒNG CUNG, CUỘN ĐẦY ĐỦ TRỌN VẸN TOÀN BỘ 49 BỨC ẢNH ---
   stageTimers.push(
     setTimeout(() => {
       currentPhase = 'concave_wall';
@@ -1077,13 +1078,16 @@ function startFull3DCosmicJourney() {
         card.position.set((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80);
         card.rotation.set(0, 0, 0);
         card.material.opacity = 1;
+        card.userData.photoIndex = i % TOTAL_PHOTOS;
+        card.material.map = loadedThreeTextures[card.userData.photoIndex];
+        card.material.needsUpdate = true;
         card.userData.progress = (i % ARC_COLS) / ARC_COLS;
         card.userData.dropY = (1 - card.userData.row) * 74;
       });
-    }, 12000)
+    }, 16000)
   );
 
-  // --- GIAI ĐOẠN D: ẢNH HẠ XUỐNG, MỘT VÀI ẢNH Ở TRÊN THẢ RƠI ĐUNG ĐƯA + HIỆN PHONG THƯ ---
+  // --- GIAI ĐOẠN D: ẢNH HẠ XUỐNG THẢ RƠI ĐUNG ĐƯA NỀN + HIỆN PHONG THƯ TÌNH CẢM ---
   stageTimers.push(
     setTimeout(() => {
       currentPhase = 'falling_letter';
@@ -1093,8 +1097,8 @@ function startFull3DCosmicJourney() {
         // Ẩn thanh tiêu đề phía trên khi hiện phong thư để không bao giờ đè chữ trên điện thoại
         document.getElementById('interleavedBanner').classList.add('dimmed');
         document.getElementById('letterOverlay').classList.remove('hidden');
-      }, 2200);
-    }, 18500)
+      }, 2500);
+    }, 31000)
   );
 }
 
@@ -1278,19 +1282,26 @@ function masterRenderLoop(now) {
       mesh.rotation.z += (0 - mesh.rotation.z) * 0.1;
     });
 
-    // Tốc độ xoay Quả Địa Cầu chậm lại ~55% để dễ ngắm từng bức ảnh kỷ niệm
-    globeGroup.rotation.y += 0.0062;
-    globeGroup.rotation.x = Math.sin(now * 0.0007) * 0.11;
+    // Tốc độ xoay Quả Địa Cầu: ~0.0102 rad/frame giúp quay trọn vẹn hơn 360 độ trong 10.8 giây để ngắm đủ 100% tất cả 49 bức ảnh!
+    globeGroup.rotation.y += 0.0102;
+    globeGroup.rotation.x = Math.sin(now * 0.0007) * 0.08;
   } else if (currentPhase === 'concave_wall') {
     // ĐOẠN 3: MÀN HÌNH LÕM HÌNH VÒNG CUNG (GIỮA LÕM SÂU VÀO TRONG, 2 BÊN CONG ÔM GẦN)
-    // CHẠY GỌN GÀNG THEO 1 HƯỚNG DUY NHẤT: TỪ TRÁI QUA PHẢI (TỐC ĐỘ CHẬM RÃI, DỄ NHÌN)!
-    const arcSpanRad = Math.PI * 0.88; // Góc mở vòng cung ~158 độ phía trước mặt (không có ảnh mặt sau gây rối!)
+    // CHẠY GỌN GÀNG THEO 1 HƯỚNG DUY NHẤT: TỪ TRÁI QUA PHẢI VÀ LIÊN TỤC CUỘN ĐỦ TRỌN VẸN 49 BỨC ẢNH!
+    const arcSpanRad = Math.PI * 0.88; // Góc mở vòng cung ~158 độ phía trước mặt
     const arcRadius = 340;
 
     arcCards.forEach((card) => {
       const u = card.userData;
-      // Giảm tốc độ chạy ngang từ 0.0022 xuống 0.00105 (chậm hơn một nửa để ngắm rõ từng tấm ảnh!)
-      u.progress = (u.progress + 0.00105) % 1;
+      u.progress += 0.00135;
+      if (u.progress >= 1) {
+        u.progress -= 1;
+        // Bức ảnh vừa chạy hết mép Phải (opacity = 0) và vòng lại mép Trái:
+        // Đổi sang bức ảnh tiếp theo trong số 49 ảnh để toàn bộ 49 ảnh lần lượt được lướt qua màn hình!
+        u.photoIndex = (u.photoIndex + TOTAL_ARC_CARDS) % TOTAL_PHOTOS;
+        card.material.map = loadedThreeTextures[u.photoIndex];
+        card.material.needsUpdate = true;
+      }
 
       // Góc theta từ -arcSpanRad/2 (bên Trái) sang +arcSpanRad/2 (bên Phải)
       const theta = (u.progress - 0.5) * arcSpanRad;
@@ -1323,8 +1334,13 @@ function masterRenderLoop(now) {
 
     arcCards.forEach((card, i) => {
       const u = card.userData;
-      // Vẫn giữ dòng chảy nhẹ từ Trái qua Phải ở dưới nền (tốc độ chậm dịu)
-      u.progress = (u.progress + 0.0006) % 1;
+      u.progress += 0.00085;
+      if (u.progress >= 1) {
+        u.progress -= 1;
+        u.photoIndex = (u.photoIndex + TOTAL_ARC_CARDS) % TOTAL_PHOTOS;
+        card.material.map = loadedThreeTextures[u.photoIndex];
+        card.material.needsUpdate = true;
+      }
       const theta = (u.progress - 0.5) * arcSpanRad;
       const baseX = Math.sin(theta) * arcRadius;
       const baseZ = 180 - Math.cos(theta) * (arcRadius * 0.72);
