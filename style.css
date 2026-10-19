@@ -1,0 +1,1425 @@
+:root {
+  --bg-space: #05010d;
+  --rose-primary: #ff4d8d;
+  --rose-light: #ffb3c6;
+  --gold-neon: #ffd166;
+  --gold-soft: #fff1cc;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-space);
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #ffffff;
+  touch-action: none;
+}
+
+/* Canvases */
+#webglCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+#fxCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 30;
+  pointer-events: none;
+}
+
+/* TOP HUD */
+.top-hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  pointer-events: none;
+}
+
+.hud-left {
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+
+.hud-couple {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--rose-light);
+  text-shadow: 0 0 14px rgba(255, 77, 141, 0.9);
+}
+
+.hud-date {
+  font-size: 0.68rem;
+  letter-spacing: 1.4px;
+  color: var(--gold-soft);
+}
+
+.hud-right {
+  pointer-events: auto;
+}
+
+.hud-circle-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 198, 222, 0.45);
+  background: rgba(26, 8, 48, 0.65);
+  color: #fff;
+  font-size: 1.05rem;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 18px rgba(255, 77, 141, 0.45);
+}
+
+.hud-circle-btn.playing {
+  animation: spinSlow 6s linear infinite;
+  border-color: var(--gold-neon);
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* SCENES */
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.75s ease;
+}
+
+.scene.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ==================== SCENE 1: 3D MINI GLOBE INTRO ==================== */
+.intro-content {
+  text-align: center;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.anniversary-pill {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 99px;
+  background: rgba(255, 77, 141, 0.18);
+  border: 1px solid rgba(255, 209, 102, 0.45);
+  color: var(--gold-soft);
+  font-size: 0.74rem;
+  letter-spacing: 1.8px;
+  margin-bottom: 14px;
+  box-shadow: 0 0 22px rgba(255, 77, 141, 0.35);
+}
+
+.intro-title {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(2.4rem, 6.8vw, 3.8rem);
+  background: linear-gradient(135deg, #ffffff 0%, #ffb3c6 50%, #ffd166 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 22px rgba(255, 77, 141, 0.5));
+  margin-bottom: 8px;
+}
+
+.intro-sub {
+  font-size: clamp(0.84rem, 2.6vw, 0.98rem);
+  color: rgba(255, 238, 245, 0.9);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.love-stats-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.stat-item {
+  background: rgba(22, 8, 42, 0.65);
+  border: 1px solid rgba(255, 182, 213, 0.3);
+  border-radius: 14px;
+  padding: 8px 14px;
+  min-width: 74px;
+  backdrop-filter: blur(8px);
+}
+
+.stat-item .val {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gold-neon);
+}
+
+.stat-item .lbl {
+  font-size: 0.66rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+}
+
+/* 3D Rotating Mini Globe Button */
+.mini-globe-trigger {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.globe-halo-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.globe-halo-ring.ring-a {
+  top: 8px;
+  width: 232px;
+  height: 232px;
+  border: 1.5px dashed rgba(255, 209, 102, 0.45);
+  animation: spinSlow 16s linear infinite;
+}
+
+.globe-halo-ring.ring-b {
+  top: -4px;
+  width: 256px;
+  height: 256px;
+  border: 1px solid rgba(255, 77, 141, 0.35);
+  box-shadow: 0 0 35px rgba(255, 77, 141, 0.35);
+  animation: spinSlow 22s linear infinite reverse;
+}
+
+#miniGlobeCanvas {
+  width: 218px;
+  height: 218px;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 32px rgba(255, 77, 141, 0.8));
+  transition: transform 0.3s ease;
+}
+
+.mini-globe-trigger:hover #miniGlobeCanvas {
+  transform: scale(1.07);
+}
+
+.globe-tap-hint {
+  margin-top: 14px;
+  font-size: 0.94rem;
+  color: var(--gold-soft);
+  letter-spacing: 0.8px;
+  text-shadow: 0 0 12px rgba(255, 77, 141, 0.8);
+  animation: pulseHint 1.8s ease-in-out infinite;
+}
+
+@keyframes pulseHint {
+  0%, 100% { opacity: 0.65; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-4px); }
+}
+
+/* ==================== SCENE 2: GOLDEN CARD + NATURAL HEART MOSAIC + CALENDAR ==================== */
+.golden-frame-card {
+  position: relative;
+  width: min(95vw, 880px);
+  background: radial-gradient(ellipse at 50% 35%, rgba(68, 22, 78, 0.65) 0%, rgba(22, 7, 38, 0.52) 68%, rgba(10, 3, 22, 0.22) 100%);
+  border: 1px solid rgba(255, 224, 150, 0.32);
+  border-radius: 40px;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.65),
+    0 0 55px rgba(255, 143, 171, 0.28),
+    inset 0 0 45px rgba(255, 209, 102, 0.15);
+  padding: 22px 28px 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+.card-top-title {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.couple-script {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(2.3rem, 5.4vw, 3.3rem);
+  font-weight: 700;
+  color: #fff8fa;
+  text-shadow: 0 0 20px rgba(255, 77, 141, 0.9);
+  display: block;
+}
+
+.beating-heart {
+  display: inline-block;
+  color: #ff2a75;
+  animation: beatHeart 1.25s infinite;
+}
+
+@keyframes beatHeart {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.16); }
+}
+
+.five-year-tag {
+  font-size: 0.84rem;
+  color: var(--gold-soft);
+  letter-spacing: 1px;
+  font-style: italic;
+}
+
+.card-split-body {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 22px;
+  width: 100%;
+  align-items: center;
+}
+
+.mosaic-heart-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heart-mosaic-stage {
+  width: min(78vw, 355px);
+  aspect-ratio: 520 / 480;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#heartMosaicCanvas {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 20px rgba(255, 77, 141, 0.55));
+}
+
+/* Right: Happy Anniversary & Soft Tilted Calendar */
+.calendar-col {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: rotate(-3.2deg);
+  animation: floatTiltedCal 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes floatTiltedCal {
+  0% { transform: rotate(-3.5deg) translateY(0px); }
+  100% { transform: rotate(-1.8deg) translateY(-6px); }
+}
+
+.womens-day-heading {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(2.1rem, 4.8vw, 2.85rem);
+  color: #ffffff;
+  text-shadow: 0 0 18px rgba(255, 179, 198, 0.95), 0 0 32px rgba(255, 77, 141, 0.65);
+  transform: rotate(-1.5deg);
+}
+
+.anniv-sub-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.02rem;
+  color: var(--rose-light);
+  letter-spacing: 1.2px;
+  margin-bottom: 4px;
+}
+
+.calendar-month-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.48rem;
+  font-weight: 700;
+  color: var(--gold-neon);
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 14px rgba(255, 209, 102, 0.45);
+}
+
+.calendar-grid {
+  width: min(84vw, 320px);
+  background: radial-gradient(ellipse at top left, rgba(255, 182, 213, 0.14) 0%, rgba(255, 255, 255, 0.04) 65%, rgba(20, 6, 38, 0.15) 100%);
+  border: 1px solid rgba(255, 224, 178, 0.18);
+  border-radius: 30px;
+  padding: 16px 14px 22px;
+  box-shadow:
+    0 16px 40px rgba(8, 2, 20, 0.45),
+    0 0 30px rgba(255, 143, 171, 0.15),
+    inset 0 0 28px rgba(255, 198, 222, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+  align-items: center;
+  justify-items: center;
+  border-bottom: 1px solid rgba(255, 224, 150, 0.2);
+  padding-bottom: 6px;
+}
+
+.cal-dow {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: rgba(255, 224, 150, 0.96);
+  text-align: center;
+}
+
+.calendar-days-wrap {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 7px;
+  align-items: center;
+  justify-items: center;
+}
+
+.cal-day {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: rgba(255, 245, 250, 0.9);
+  border-radius: 50%;
+}
+
+.cal-day.special-20 {
+  width: 36px;
+  height: 36px;
+  background: radial-gradient(circle at 30% 30%, #ffe5ec 0%, #ff4d8d 42%, #c9184a 85%, #800f2f 100%);
+  color: #ffffff;
+  font-style: normal;
+  font-size: 0.88rem;
+  font-weight: 800;
+  border: 1.5px solid #fff3b0;
+  box-shadow:
+    0 0 14px #ff4d8d,
+    0 0 28px #ffd166,
+    0 0 42px rgba(255, 77, 141, 0.95),
+    inset 0 0 10px rgba(255, 255, 255, 0.8);
+  transform: scale(1.34);
+  animation: sparkleDay20 1.15s ease-in-out infinite alternate;
+  position: relative;
+  z-index: 4;
+}
+
+@keyframes sparkleDay20 {
+  0% {
+    transform: scale(1.28) rotate(-3deg);
+    box-shadow:
+      0 0 14px #ff4d8d,
+      0 0 26px #ffd166,
+      0 0 38px rgba(255, 77, 141, 0.85),
+      inset 0 0 8px rgba(255, 255, 255, 0.75);
+    filter: brightness(1.05);
+  }
+  100% {
+    transform: scale(1.46) rotate(3deg);
+    box-shadow:
+      0 0 22px #fff,
+      0 0 36px #ffd166,
+      0 0 54px #ff4d8d,
+      inset 0 0 14px #ffffff;
+    filter: brightness(1.28);
+  }
+}
+
+.cal-day.special-20::before {
+  content: '✨';
+  position: absolute;
+  top: -10px;
+  right: -9px;
+  font-size: 0.68rem;
+  animation: spinSlow 4s linear infinite;
+  filter: drop-shadow(0 0 6px #ffd166);
+}
+
+.cal-day.special-20::after {
+  content: '✨ 5 Năm ✨';
+  position: absolute;
+  bottom: -13px;
+  font-size: 0.48rem;
+  white-space: nowrap;
+  color: #fff3b0;
+  text-shadow: 0 0 8px #ff4d8d, 0 0 12px #000;
+  font-weight: 800;
+}
+
+.heart-piece-btn {
+  margin-top: 10px;
+  padding: 12px 30px;
+  border-radius: 999px;
+  border: 1.5px solid #ffd166;
+  background: linear-gradient(135deg, rgba(255, 77, 141, 0.95), rgba(157, 78, 221, 0.95));
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 0 26px rgba(255, 77, 141, 0.8);
+  z-index: 6;
+  animation: beatHeart 1.8s infinite;
+}
+
+.meadow-flowers-canvas {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 62px;
+  pointer-events: none;
+}
+
+/* ==================== SCENE 3, 4, 5, 6: COSMOS BANNER & LOVE LETTER OVERLAY ==================== */
+#sceneCosmos {
+  pointer-events: none;
+}
+
+.interleaved-banner {
+  position: fixed;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92vw, 660px);
+  text-align: center;
+  z-index: 35;
+  pointer-events: none;
+  padding: 10px 18px;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at center, rgba(32, 8, 58, 0.65) 0%, rgba(10, 3, 22, 0.2) 100%);
+  border: 1px solid rgba(255, 198, 222, 0.25);
+  backdrop-filter: blur(6px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.interleaved-banner.dimmed {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-16px);
+}
+
+.banner-step {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  color: var(--gold-neon);
+  margin-bottom: 2px;
+}
+
+.banner-main {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(1.65rem, 4.6vw, 2.45rem);
+  font-weight: 700;
+  background: linear-gradient(90deg, #ffffff, #ffb3c6, #ffd166);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 12px rgba(255, 77, 141, 0.55));
+}
+
+.banner-sub {
+  font-size: clamp(0.75rem, 2.2vw, 0.88rem);
+  color: rgba(255, 240, 246, 0.9);
+}
+
+/* LOVE LETTER OVERLAY */
+.letter-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 38;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 16px 16px;
+  pointer-events: auto;
+  background: radial-gradient(circle at center, rgba(12, 4, 24, 0.25) 0%, rgba(6, 2, 14, 0.45) 100%);
+  transition: opacity 0.8s ease;
+}
+
+.letter-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cute-envelope {
+  position: relative;
+  width: 240px;
+  height: 162px;
+  cursor: pointer;
+  animation: floatEnv 2.4s ease-in-out infinite alternate;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+@keyframes floatEnv {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-14px) scale(1.05); }
+}
+
+.env-pocket {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, #ff9ebb, #ff4d8d);
+  border-radius: 16px;
+  border: 3px solid #ffe5ec;
+  box-shadow: 0 18px 50px rgba(255, 77, 141, 0.65), 0 0 30px rgba(255, 209, 102, 0.35);
+}
+
+.env-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 86px;
+  background: linear-gradient(180deg, #ffc2d1, #ff758f);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  z-index: 2;
+  border-top: 3px solid #ffe5ec;
+  transform-origin: top center;
+  transition: transform 0.6s ease;
+}
+
+.cute-envelope.opening .env-flap {
+  transform: rotateX(180deg);
+}
+
+.env-heart-seal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #fff0f3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  z-index: 3;
+  box-shadow: 0 4px 18px rgba(201, 24, 74, 0.6);
+}
+
+.env-tap-label {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--gold-soft);
+  text-shadow: 0 2px 10px #000;
+  white-space: nowrap;
+}
+
+/* Opened Tilted Romantic Letter Card */
+.opened-letter-card {
+  width: min(92vw, 510px);
+  max-height: calc(100dvh - 64px);
+  overflow-y: auto;
+  background: rgba(255, 248, 250, 0.95);
+  color: #4a1525;
+  border-radius: 20px;
+  padding: 14px;
+  box-shadow:
+    -10px 14px 0 rgba(255, 182, 213, 0.65),
+    0 24px 60px rgba(0, 0, 0, 0.8);
+  transform: rotate(-1.2deg) scale(1);
+  transition: all 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  backdrop-filter: blur(6px);
+}
+
+.opened-letter-card.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: rotate(4deg) scale(0.75);
+  position: absolute;
+}
+
+.letter-inner-border {
+  border: 2px dashed #ff8fab;
+  border-radius: 14px;
+  padding: 20px 18px 16px;
+  position: relative;
+  text-align: center;
+}
+
+.corner-deco {
+  position: absolute;
+  font-size: 1.2rem;
+}
+.corner-deco.top-left { top: 8px; left: 10px; }
+.corner-deco.top-right { top: 8px; right: 10px; }
+.corner-deco.bottom-left { bottom: 8px; left: 10px; }
+.corner-deco.bottom-right { bottom: 8px; right: 10px; }
+
+.letter-greeting {
+  font-family: 'Dancing Script', cursive;
+  font-size: 2.2rem;
+  color: #d90429;
+  margin-bottom: 8px;
+}
+
+.letter-body-text {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #3d1020;
+  min-height: 130px;
+  font-weight: 500;
+  white-space: pre-line;
+}
+
+.letter-signature {
+  margin-top: 10px;
+  text-align: right;
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.3rem;
+  color: #c9184a;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Nút Hẹn Gặp Vk Tối Mai Tại -> ... */
+.letter-date-invite-wrap {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(201, 24, 74, 0.28);
+  display: flex;
+  justify-content: center;
+}
+
+.date-invite-btn {
+  padding: 11px 22px;
+  border-radius: 999px;
+  border: 2px solid #ffd166;
+  background: linear-gradient(135deg, #c9184a 0%, #ff4d8d 55%, #b5179e 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow:
+    0 6px 22px rgba(201, 24, 74, 0.55),
+    0 0 18px rgba(255, 209, 102, 0.65);
+  animation: beatHeart 1.6s infinite;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.date-invite-btn:hover {
+  transform: scale(1.05);
+}
+
+.letter-bottom-actions {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.replay-pill-btn {
+  padding: 8px 20px;
+  border-radius: 99px;
+  border: none;
+  background: linear-gradient(135deg, #ff4d8d, #9d4edd);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 77, 141, 0.55);
+}
+
+/* ==================== MODAL THIỆP HẸN HÒ NHÀ HÀNG SANG TRỌNG ==================== */
+.restaurant-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Chừa khoảng trống đỉnh 56px để không bao giờ bị thanh tiêu đề góc trên chèn vào cạnh khung */
+  padding: 56px 14px 16px;
+  background: rgba(5, 1, 13, 0.82);
+  backdrop-filter: blur(12px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.restaurant-modal.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+}
+
+.restaurant-card {
+  position: relative;
+  width: min(94vw, 540px);
+  max-height: calc(100dvh - 72px);
+  overflow-y: auto;
+  background: linear-gradient(160deg, #1b112c 0%, #0f1c1a 55%, #160c24 100%);
+  border: 1.5px solid rgba(255, 209, 102, 0.65);
+  border-radius: 26px;
+  padding: 24px 18px 18px;
+  color: #fff8f0;
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.85),
+    0 0 45px rgba(255, 209, 102, 0.28),
+    inset 0 0 30px rgba(255, 209, 102, 0.1);
+  text-align: center;
+}
+
+.restaurant-close-x {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 209, 102, 0.45);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffd166;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.restaurant-badge {
+  display: inline-block;
+  max-width: calc(100% - 76px);
+  margin: 0 auto 12px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: rgba(255, 209, 102, 0.16);
+  border: 1px solid rgba(255, 209, 102, 0.55);
+  color: var(--gold-neon);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  line-height: 1.35;
+}
+
+.restaurant-body-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.restaurant-img-wrap {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 209, 102, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.restaurant-photo {
+  width: 100%;
+  height: auto;
+  max-height: 215px;
+  object-fit: cover;
+  display: block;
+}
+
+.restaurant-img-caption {
+  background: linear-gradient(90deg, rgba(15, 28, 26, 0.95), rgba(38, 16, 48, 0.95));
+  color: #ffe8a3;
+  font-size: 0.78rem;
+  padding: 6px 10px;
+  font-style: italic;
+}
+
+.restaurant-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.55rem, 4.8vw, 2rem);
+  font-weight: 700;
+  color: var(--gold-neon);
+  text-shadow: 0 0 16px rgba(255, 209, 102, 0.45);
+  margin-bottom: 2px;
+}
+
+.restaurant-cuisine {
+  font-size: 0.86rem;
+  color: #ffb3c6;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.restaurant-address-box {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  border-radius: 16px;
+  padding: 10px 14px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.addr-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.addr-icon {
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+
+.addr-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.86rem;
+  line-height: 1.48;
+}
+
+.addr-text strong {
+  color: #ffd166;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.addr-text span {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.restaurant-sweet-note {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.04rem;
+  line-height: 1.48;
+  color: #ffe5ec;
+  margin-bottom: 12px;
+  padding: 0 6px;
+}
+
+.restaurant-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.map-link-btn {
+  text-decoration: none;
+  padding: 10px 18px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, #ffd166, #f4a261);
+  color: #1d0c2e;
+  font-weight: 700;
+  font-size: 0.84rem;
+  box-shadow: 0 4px 15px rgba(255, 209, 102, 0.45);
+}
+
+.back-letter-btn {
+  padding: 10px 18px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 179, 198, 0.55);
+  background: rgba(255, 77, 141, 0.25);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.84rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ==================== TỐI ƯU HIỂN THỊ TRÊN ĐIỆN THOẠI DỌC (PORTRAIT MOBILE) ==================== */
+@media (max-width: 768px) {
+  .top-hud {
+    padding: 8px 12px;
+  }
+  .hud-couple {
+    font-size: 1.28rem;
+  }
+  .hud-date {
+    font-size: 0.6rem;
+    letter-spacing: 0.8px;
+  }
+  .hud-circle-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 0.96rem;
+  }
+
+  .scene {
+    padding: 50px 10px 10px;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Cảnh 1: Mở đầu trên điện thoại dọc (chữ & quả địa cầu to hơn một chút nhưng vẫn cân đối) */
+  .anniversary-pill {
+    font-size: 0.68rem;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    margin-bottom: 8px;
+  }
+  .intro-title {
+    font-size: clamp(2.1rem, 7.8vw, 2.75rem);
+    margin-bottom: 6px;
+  }
+  .intro-sub {
+    font-size: 0.86rem;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .love-stats-row {
+    gap: 7px;
+    margin-bottom: 14px;
+  }
+  .stat-item {
+    padding: 7px 11px;
+    min-width: 70px;
+    border-radius: 12px;
+  }
+  .stat-item .val {
+    font-size: 1.28rem;
+  }
+  .stat-item .lbl {
+    font-size: 0.62rem;
+  }
+  #miniGlobeCanvas {
+    width: 174px;
+    height: 174px;
+  }
+  .globe-halo-ring.ring-a {
+    top: 6px;
+    width: 186px;
+    height: 186px;
+  }
+  .globe-halo-ring.ring-b {
+    top: -4px;
+    width: 204px;
+    height: 204px;
+  }
+  .globe-tap-hint {
+    margin-top: 10px;
+    font-size: 0.84rem;
+  }
+
+  /* Cảnh 2: Khung Lịch & Mảnh Ghép Trái Tim trên điện thoại dọc (chữ rõ hơn, ngày 20 to lấp lánh, vừa khít màn hình) */
+  .golden-frame-card {
+    width: 95vw;
+    padding: 10px 12px 38px;
+    border-radius: 26px;
+    max-height: calc(100dvh - 58px);
+    justify-content: space-between;
+  }
+  .card-top-title {
+    margin-bottom: 2px;
+  }
+  .couple-script {
+    font-size: 1.82rem;
+    line-height: 1.1;
+  }
+  .five-year-tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.4px;
+    display: block;
+  }
+  .card-split-body {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .heart-mosaic-stage {
+    width: min(46vw, 178px);
+  }
+  .calendar-col {
+    transform: rotate(-1.6deg);
+    margin-bottom: 2px;
+  }
+  @keyframes floatTiltedCal {
+    0% { transform: rotate(-1.8deg) translateY(0px); }
+    100% { transform: rotate(-0.8deg) translateY(-3px); }
+  }
+  .womens-day-heading {
+    font-size: 1.56rem;
+    line-height: 1.1;
+  }
+  .anniv-sub-heading {
+    font-size: 0.78rem;
+    margin-bottom: 1px;
+  }
+  .calendar-month-title {
+    font-size: 1.04rem;
+    margin-bottom: 4px;
+  }
+  .calendar-grid {
+    width: min(86vw, 272px);
+    padding: 8px 10px 14px;
+    border-radius: 20px;
+  }
+  .calendar-weekdays {
+    margin-bottom: 5px;
+    padding-bottom: 4px;
+  }
+  .cal-dow {
+    font-size: 0.76rem;
+  }
+  .calendar-days-wrap {
+    row-gap: 3px;
+  }
+  .cal-day {
+    width: 24px;
+    height: 24px;
+    font-size: 0.85rem;
+  }
+  .cal-day.special-20 {
+    width: 28px;
+    height: 28px;
+    font-size: 0.74rem;
+  }
+  .cal-day.special-20::before {
+    top: -8px;
+    right: -7px;
+    font-size: 0.56rem;
+  }
+  .cal-day.special-20::after {
+    bottom: -10px;
+    font-size: 0.42rem;
+  }
+  .heart-piece-btn {
+    margin-top: 6px;
+    padding: 9px 20px;
+    font-size: 0.82rem;
+  }
+  .meadow-flowers-canvas {
+    height: 34px;
+  }
+
+  /* Cảnh 3-6: Banner & Lá Thư trên điện thoại dọc */
+  .interleaved-banner {
+    top: 46px;
+    width: 94vw;
+    padding: 8px 12px;
+    border-radius: 14px;
+  }
+  .banner-step {
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+  }
+  .banner-main {
+    font-size: clamp(1.48rem, 5.8vw, 1.92rem);
+  }
+  .banner-sub {
+    font-size: 0.75rem;
+  }
+
+  .opened-letter-card {
+    width: 94vw;
+    padding: 12px;
+    transform: rotate(-0.6deg);
+  }
+  .letter-inner-border {
+    padding: 16px 14px 14px;
+  }
+  .letter-greeting {
+    font-size: 1.95rem;
+    margin-bottom: 6px;
+  }
+  .letter-body-text {
+    font-size: 0.9rem;
+    line-height: 1.56;
+    min-height: 110px;
+  }
+  .letter-signature {
+    font-size: 1.26rem;
+    margin-top: 8px;
+  }
+  .date-invite-btn {
+    padding: 10px 18px;
+    font-size: 0.86rem;
+    width: 100%;
+  }
+  .replay-pill-btn {
+    font-size: 0.76rem;
+    padding: 8px 16px;
+  }
+}
+
+/* ==================== TỐI ƯU KHI XOAY NGANG ĐIỆN THOẠI (LANDSCAPE MOBILE) ==================== */
+@media (max-height: 540px) and (orientation: landscape) {
+  .top-hud {
+    padding: 4px 14px;
+  }
+  .hud-couple {
+    font-size: 1.12rem;
+  }
+  .hud-date {
+    font-size: 0.56rem;
+  }
+  .hud-circle-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .scene {
+    padding: 36px 14px 6px;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Cảnh 1 khi xoay ngang: Chia 2 cột trái-phải cân đối, không bao giờ tràn chiều dọc */
+  .intro-content {
+    max-width: 92vw;
+    display: grid;
+    grid-template-columns: 1.22fr 0.78fr;
+    align-items: center;
+    gap: 16px;
+  }
+  .anniversary-pill,
+  .intro-title,
+  .intro-sub,
+  .love-stats-row {
+    grid-column: 1;
+    margin-bottom: 4px;
+  }
+  .mini-globe-trigger {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+  }
+  .intro-title {
+    font-size: 1.88rem;
+  }
+  .intro-sub {
+    font-size: 0.8rem;
+    line-height: 1.38;
+  }
+  .stat-item {
+    padding: 4px 9px;
+    min-width: 60px;
+  }
+  .stat-item .val {
+    font-size: 1.08rem;
+  }
+  #miniGlobeCanvas {
+    width: 136px;
+    height: 136px;
+  }
+  .globe-halo-ring.ring-a {
+    top: 4px;
+    width: 146px;
+    height: 146px;
+  }
+  .globe-halo-ring.ring-b {
+    top: -4px;
+    width: 160px;
+    height: 160px;
+  }
+  .globe-tap-hint {
+    margin-top: 6px;
+    font-size: 0.72rem;
+  }
+
+  /* Cảnh 2 khi xoay ngang: Giữ bố cục 2 cột Trái (Trái tim) - Phải (Lịch) vừa khít màn hình ngang */
+  .golden-frame-card {
+    width: min(94vw, 760px);
+    max-height: calc(100dvh - 42px);
+    padding: 6px 16px 26px;
+    border-radius: 22px;
+  }
+  .card-top-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 2px;
+  }
+  .couple-script {
+    font-size: 1.45rem;
+  }
+  .five-year-tag {
+    font-size: 0.66rem;
+  }
+  .card-split-body {
+    grid-template-columns: 0.92fr 1.08fr !important;
+    gap: 10px;
+  }
+  .heart-mosaic-stage {
+    width: min(26vw, 158px);
+  }
+  .calendar-col {
+    transform: rotate(-1.2deg);
+  }
+  .womens-day-heading {
+    font-size: 1.24rem;
+  }
+  .anniv-sub-heading {
+    font-size: 0.68rem;
+    margin-bottom: 0;
+  }
+  .calendar-month-title {
+    font-size: 0.88rem;
+    margin-bottom: 2px;
+  }
+  .calendar-grid {
+    width: min(44vw, 240px);
+    padding: 5px 8px 8px;
+    border-radius: 14px;
+  }
+  .calendar-weekdays {
+    margin-bottom: 3px;
+    padding-bottom: 2px;
+  }
+  .cal-dow {
+    font-size: 0.64rem;
+  }
+  .calendar-days-wrap {
+    row-gap: 1px;
+  }
+  .cal-day {
+    width: 19px;
+    height: 19px;
+    font-size: 0.72rem;
+  }
+  .cal-day.special-20 {
+    width: 22px;
+    height: 22px;
+    font-size: 0.64rem;
+  }
+  .cal-day.special-20::after {
+    display: none;
+  }
+  .heart-piece-btn {
+    margin-top: 2px;
+    padding: 5px 14px;
+    font-size: 0.74rem;
+  }
+  .meadow-flowers-canvas {
+    height: 22px;
+  }
+
+  /* Cảnh 3-6 khi xoay ngang */
+  .interleaved-banner {
+    top: 34px;
+    padding: 4px 12px;
+  }
+  .banner-step {
+    font-size: 0.54rem;
+  }
+  .banner-main {
+    font-size: 1.32rem;
+  }
+  .banner-sub {
+    font-size: 0.68rem;
+  }
+
+  .letter-overlay {
+    padding: 34px 12px 8px;
+  }
+  .opened-letter-card {
+    width: min(92vw, 650px);
+    max-height: calc(100dvh - 42px);
+    padding: 8px 12px;
+    transform: rotate(0deg);
+  }
+  .letter-inner-border {
+    padding: 10px 14px 8px;
+  }
+  .letter-greeting {
+    font-size: 1.45rem;
+    margin-bottom: 2px;
+  }
+  .letter-body-text {
+    font-size: 0.8rem;
+    line-height: 1.42;
+    min-height: 60px;
+  }
+  .letter-signature {
+    font-size: 1.08rem;
+    margin-top: 2px;
+  }
+  .letter-date-invite-wrap {
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+  .date-invite-btn {
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    width: auto;
+  }
+
+  /* Modal Nhà Hàng khi xoay ngang: Chia 2 cột Ảnh bên trái - Thông tin bên phải */
+  .restaurant-modal {
+    padding: 38px 12px 8px;
+  }
+  .restaurant-card {
+    width: min(94vw, 720px);
+    max-height: calc(100dvh - 48px);
+    padding: 12px 16px;
+  }
+  .restaurant-body-grid {
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .restaurant-photo {
+    max-height: 155px;
+  }
+  .restaurant-name {
+    font-size: 1.32rem;
+  }
+  .restaurant-cuisine {
+    font-size: 0.76rem;
+    margin-bottom: 4px;
+  }
+  .restaurant-address-box {
+    padding: 6px 10px;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .addr-text {
+    font-size: 0.76rem;
+  }
+  .restaurant-sweet-note {
+    font-size: 0.86rem;
+    margin-bottom: 6px;
+  }
+}
+

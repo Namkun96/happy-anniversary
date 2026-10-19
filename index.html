@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Happy Anniversary 5 Năm • 20.10 | Ck ❤️ Vk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Dancing+Script:wght@600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Three.js 3D WebGL Engine (Local) -->
+  <script src="three.min.js"></script>
+</head>
+<body>
+
+  <!-- 1. PERSISTENT 3D WEBGL GALAXY, SATURN, SEAMLESS GLOBE & CONCAVE SCREEN -->
+  <canvas id="webglCanvas"></canvas>
+
+  <!-- 2. 2D OVERLAY CANVAS FOR FAST PHOTOREALISTIC ROSE BLOOM & SHOOTING STARS -->
+  <canvas id="fxCanvas"></canvas>
+
+  <!-- TOP HUD -->
+  <header id="topHud" class="top-hud">
+    <div class="hud-left">
+      <span class="hud-couple">Ck ❤️ Vk</span>
+      <span class="hud-date">20.10.2021 — 20.10.2026 • Happy Anniversary 5 Năm</span>
+    </div>
+    <div class="hud-right">
+      <button id="musicBtn" class="hud-circle-btn playing" title="Bật / Tắt nhạc">🎵</button>
+    </div>
+  </header>
+
+  <!-- ==================== SCENE 1: INTRO WITH 3D ROTATING MINI GLOBE ==================== -->
+  <section id="sceneIntro" class="scene active">
+    <div id="introContent" class="intro-content">
+      <div class="anniversary-pill">✨ 20.10.2021 — 20.10.2026 • NỬA THẬP KỶ BÊN NHAU ✨</div>
+      <h1 class="intro-title">Happy Anniversary 5 Năm</h1>
+      <p class="intro-sub">
+        Chúc mừng nửa thập kỷ của chúng ta • Ck yêu vk<br/>
+        Cảm ơn vk vì đã luôn bên ck • Chúng ta sẽ mãi bên nhau
+      </p>
+
+      <div class="love-stats-row">
+        <div class="stat-item"><span class="val">05</span><span class="lbl">Năm Yêu</span></div>
+        <div class="stat-item"><span class="val">60</span><span class="lbl">Tháng Nhớ</span></div>
+        <div class="stat-item"><span class="val">1826</span><span class="lbl">Ngày Thương</span></div>
+        <div class="stat-item"><span class="val">∞</span><span class="lbl">Mãi Bên Nhau</span></div>
+      </div>
+
+      <!-- 3D Mini Globe Trigger Area (The 3D Mini Globe renders right inside this orb!) -->
+      <div id="miniGlobeBtn" class="mini-globe-trigger" role="button" aria-label="Chạm vào quả địa cầu">
+        <div class="globe-halo-ring ring-a"></div>
+        <div class="globe-halo-ring ring-b"></div>
+        <canvas id="miniGlobeCanvas" width="250" height="250"></canvas>
+        <span class="globe-tap-hint">🌍 Chạm vào Quả Địa Cầu Vũ Trụ để mở món quà 5 năm ✨</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SCENE 2: GOLDEN CARD + NATURAL HEART MOSAIC + CALENDAR ==================== -->
+  <section id="sceneCalendar" class="scene">
+    <div class="golden-frame-card">
+      <div class="card-top-title">
+        <span class="couple-script">Ck <span class="beating-heart">❤️</span> Vk</span>
+        <span class="five-year-tag">Chúc mừng nửa thập kỷ của chúng ta • 20.10.2021 — 20.10.2026</span>
+      </div>
+
+      <div class="card-split-body">
+        <!-- Left: Organic Natural Heart Photo Puzzle Mosaic (2x Retina Resolution) -->
+        <div class="mosaic-heart-col">
+          <div class="heart-mosaic-stage">
+            <canvas id="heartMosaicCanvas" width="1040" height="960"></canvas>
+          </div>
+        </div>
+
+        <!-- Right: Happy Anniversary & October 2026 Calendar -->
+        <div class="calendar-col">
+          <div class="womens-day-heading">Happy Anniversary</div>
+          <div class="anniv-sub-heading">5 Năm Yêu Nhau • 1.826 Ngày Bên Nhau</div>
+          <div class="calendar-month-title">October • 2026</div>
+
+          <div class="calendar-grid">
+            <div class="calendar-weekdays">
+              <div class="cal-dow">T2</div>
+              <div class="cal-dow">T3</div>
+              <div class="cal-dow">T4</div>
+              <div class="cal-dow">T5</div>
+              <div class="cal-dow">T6</div>
+              <div class="cal-dow">T7</div>
+              <div class="cal-dow">CN</div>
+            </div>
+            <div id="calendarDays" class="calendar-days-wrap"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Floating Trigger Button -->
+      <button id="toCosmosBtn" class="heart-piece-btn">
+        💖 Chạm giữ vào mảnh ghép trái tim 💖
+      </button>
+
+      <!-- Glowing bottom garden meadow flowers (SVG/Canvas natural look) -->
+      <canvas id="meadowFlowersCanvas" class="meadow-flowers-canvas" width="900" height="90"></canvas>
+    </div>
+  </section>
+
+  <!-- ==================== SCENE 3, 4, 5, 6: 3D COSMOS OVERLAY & LOVE LETTER ==================== -->
+  <section id="sceneCosmos" class="scene">
+    <!-- Top Interleaved Message Banner -->
+    <div id="interleavedBanner" class="interleaved-banner">
+      <div id="bannerStep" class="banner-step">✨ KỶ NIỆM 5 NĂM YÊU NHAU (20.10.2021 — 20.10.2026) ✨</div>
+      <div id="bannerMain" class="banner-main">Chúc mừng nửa thập kỷ của chúng ta</div>
+      <div id="bannerSub" class="banner-sub">Ck yêu vk • Cảm ơn vk vì đã luôn bên ck • Chúng ta sẽ mãi bên nhau</div>
+    </div>
+
+    <!-- Envelope & Love Letter Overlay (Appears in Scene 6 while photos keep drifting in background!) -->
+    <div id="letterOverlay" class="letter-overlay hidden">
+      <!-- Cute Floating 3D-styled Envelope -->
+      <div id="cuteEnvelope" class="cute-envelope">
+        <div class="env-flap"></div>
+        <div class="env-pocket"></div>
+        <div class="env-heart-seal">❤️</div>
+        <div class="env-tap-label">✨ Chạm để mở bức thư kỷ niệm 5 năm ✨</div>
+      </div>
+
+      <!-- Opened Tilted Romantic Letter Card (Photos still drift softly in the background!) -->
+      <div id="openedLetterCard" class="opened-letter-card hidden">
+        <div class="letter-inner-border">
+          <span class="corner-deco top-left">💖</span>
+          <span class="corner-deco top-right">🌸</span>
+          <span class="corner-deco bottom-left">✨</span>
+          <span class="corner-deco bottom-right">❤️</span>
+
+          <h2 class="letter-greeting">Gửi vk yêu !</h2>
+          <div id="typewriterText" class="letter-body-text"></div>
+
+          <div class="letter-signature">
+            <span>Ngàn ánh sao ôm lấy vk,</span>
+            <strong>Ck yêu vk ❤️</strong>
+          </div>
+
+          <!-- Nút hẹn gặp vk tối mai tại nhà hàng -->
+          <div class="letter-date-invite-wrap">
+            <button id="openRestaurantBtn" class="date-invite-btn">
+              🥂 Hẹn gặp vk tối mai tại &rarr; ...
+            </button>
+          </div>
+        </div>
+
+        <div class="letter-bottom-actions">
+          <button id="replaySequenceBtn" class="replay-pill-btn">🔄 Xem lại hành trình 3D từ Sao Thổ &amp; Quả Địa Cầu</button>
+        </div>
+      </div>
+
+      <!-- Modal Thiệp Hẹn Hò Nhà Hàng Sang Trọng (Man Tang Guo The Loop Xuân Thủy) -->
+      <div id="restaurantModal" class="restaurant-modal hidden">
+        <div class="restaurant-card">
+          <button id="closeRestaurantIconBtn" class="restaurant-close-x" aria-label="Đóng">✕</button>
+          <div class="restaurant-badge">✨ LỜI HẸN KỶ NIỆM 5 NĂM • TỐI MAI ✨</div>
+
+          <div class="restaurant-body-grid">
+            <div class="restaurant-img-wrap">
+              <img src="restaurant.jpg" alt="Man Tang Guo The Loop Xuân Thủy" class="restaurant-photo" />
+              <div class="restaurant-img-caption">🥂 Không gian bàn tiệc ấm cúng &amp; sang trọng chờ đón vk yêu</div>
+            </div>
+
+            <div class="restaurant-info-col">
+              <h3 class="restaurant-name">Man Tang Guo The Loop Xuân Thủy</h3>
+              <p class="restaurant-cuisine">🍲 Nhà Hàng Lẩu Đài Loan Thượng Hạng</p>
+
+              <div class="restaurant-address-box">
+                <div class="addr-row">
+                  <span class="addr-icon">📍</span>
+                  <div class="addr-text">
+                    <strong>Địa điểm hẹn hò của hai vợ chồng:</strong>
+                    <span>114, 115A Tầng 1 TTTM The Loop IPH, 241 Xuân Thủy, Cầu Giấy</span>
+                  </div>
+                </div>
+                <div class="addr-row">
+                  <span class="addr-icon">🌙</span>
+                  <div class="addr-text">
+                    <strong>Thời gian:</strong>
+                    <span>Tối mai (20/10) • Kỷ niệm 5 năm yêu nhau</span>
+                  </div>
+                </div>
+              </div>
+
+              <p class="restaurant-sweet-note">
+                “Tối mai vk yêu lên đồ thật xinh nhé, ck đón vk đi thưởng thức bữa tối thật ấm cúng mừng nửa thập kỷ bên nhau của chúng mình! ❤️”
+              </p>
+
+              <div class="restaurant-actions">
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=Man+Tang+Guo+The+Loop+IPH+241+Xuan+Thuy+Cau+Giay"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="map-link-btn"
+                >
+                  🗺️ Xem chỉ đường Google Maps
+                </a>
+                <button id="backToLetterBtn" class="back-letter-btn">💌 Quay lại lá thư</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Background Audio: Yêu Em Hơn Mỗi Ngày (Andiez) - Bắt đầu ngay đoạn điệp khúc: Hành trình mình yêu nhau... -->
+  <audio id="bgMusic" src="music.mp3?v=hanhtrinhminhyeunhau" loop preload="auto"></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
