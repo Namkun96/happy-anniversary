@@ -52,25 +52,25 @@ def create_rose_qr(target_url, output_path='Hoa_Hong_QR_Ky_Niem_5_Nam.png'):
 
     draw = ImageDraw.Draw(bg)
     try:
+        font_title = ImageFont.truetype('segoeuib.ttf', 44)
+        font_sub = ImageFont.truetype('segoeui.ttf', 28)
+        font_hint = ImageFont.truetype('segoeuib.ttf', 32)
+        font_note = ImageFont.truetype('segoeuib.ttf', 26)
+    except Exception:
         font_title = ImageFont.truetype('arialbd.ttf', 44)
         font_sub = ImageFont.truetype('arial.ttf', 28)
         font_hint = ImageFont.truetype('arialbd.ttf', 32)
-        font_note = ImageFont.truetype('arial.ttf', 24)
-    except Exception:
-        font_title = ImageFont.load_default()
-        font_sub = font_title
-        font_hint = font_title
-        font_note = font_title
+        font_note = ImageFont.truetype('arialbd.ttf', 26)
 
     # Header texts
-    draw.text((card_w//2, 90), '✨ HAPPY ANNIVERSARY 5 NĂM ✨', fill='#ffd166', font=font_title, anchor='mm')
-    draw.text((card_w//2, 145), '20.10.2021 — 20.10.2026 • Ck Yêu Vk ❤️', fill='#ffb3c6', font=font_sub, anchor='mm')
-    draw.text((card_w//2, 195), 'Chúc mừng nửa thập kỷ chúng mình bên nhau', fill='#fff0f5', font=font_sub, anchor='mm')
+    draw.text((card_w//2, 85), 'HAPPY ANNIVERSARY 5 NĂM', fill='#ffd166', font=font_title, anchor='mm')
+    draw.text((card_w//2, 140), '20.10.2021 — 20.10.2026 • Ck Yêu Vk', fill='#ffb3c6', font=font_sub, anchor='mm')
+    draw.text((card_w//2, 190), 'Chúc mừng nửa thập kỷ chúng mình bên nhau', fill='#fff0f5', font=font_sub, anchor='mm')
 
     # Footer texts
-    draw.text((card_w//2, 1100), '🌹 Chạm / Mở Camera hoặc Zalo quét mã QR 🌹', fill='#ffd166', font=font_hint, anchor='mm')
-    draw.text((card_w//2, 1150), 'Để khám phá món quà bí mật & hành trình vũ trụ 3D của chúng mình', fill='#ffccd5', font=font_sub, anchor='mm')
-    draw.text((card_w//2, 1220), 'Mãi bên nhau & Yêu vk thật nhiều! ❤️', fill='#ffffff', font=font_note, anchor='mm')
+    draw.text((card_w//2, 1095), 'Mở Camera hoặc Zalo quét mã QR', fill='#ffd166', font=font_hint, anchor='mm')
+    draw.text((card_w//2, 1145), 'Để cùng anh mở cánh cửa vũ trụ 3D tình yêu của chúng mình', fill='#ffccd5', font=font_sub, anchor='mm')
+    draw.text((card_w//2, 1210), 'Yêu em nhiều hơn mỗi ngày!', fill='#ffffff', font=font_note, anchor='mm')
 
     bg.save(output_path, 'PNG')
     print(f'Saved {output_path} for {target_url}')
