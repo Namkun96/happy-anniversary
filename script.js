@@ -712,91 +712,12 @@ function createStarGlowTexture() {
 }
 const starGlowTex = createStarGlowTexture();
 
-// 6.0 HỆ THỐNG TINH VÂN VŨ TRỤ LÃNG MẠN (ROMANTIC COSMIC NEBULA)
-const nebulaGroup = new THREE.Group();
-scene.add(nebulaGroup);
-
-function createNebulaTexture(coreHex, midHex) {
-  const c = document.createElement('canvas');
-  c.width = 512;
-  c.height = 512;
-  const ctx = c.getContext('2d');
-
-  // Lớp tỏa sáng chính ở tâm đám mây tinh vân
-  const g = ctx.createRadialGradient(256, 256, 12, 256, 256, 248);
-  g.addColorStop(0, coreHex);
-  g.addColorStop(0.38, midHex);
-  g.addColorStop(0.72, midHex.replace(/[\d\.]+\)$/, '0.08)'));
-  g.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 512, 512);
-
-  // Các đám bụi khí tinh vân ngẫu nhiên xung quanh tạo chiều sâu bồng bềnh
-  for (let i = 0; i < 24; i++) {
-    const cx = 130 + Math.random() * 252;
-    const cy = 130 + Math.random() * 252;
-    const cr = 45 + Math.random() * 95;
-    const g2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr);
-    g2.addColorStop(0, coreHex.replace(/[\d\.]+\)$/, '0.36)'));
-    g2.addColorStop(0.65, midHex.replace(/[\d\.]+\)$/, '0.12)'));
-    g2.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = g2;
-    ctx.beginPath();
-    ctx.arc(cx, cy, cr, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  return new THREE.CanvasTexture(c);
-}
-
-const nebulaTextures = [
-  createNebulaTexture('rgba(255, 42, 117, 0.42)', 'rgba(255, 117, 143, 0.22)'), // Tinh vân hồng tình yêu
-  createNebulaTexture('rgba(157, 78, 221, 0.40)', 'rgba(114, 9, 183, 0.20)'),   // Tinh vân tím ngân hà
-  createNebulaTexture('rgba(0, 245, 212, 0.35)', 'rgba(114, 239, 221, 0.16)'),  // Tinh vân ngọc vũ trụ
-  createNebulaTexture('rgba(255, 209, 102, 0.32)', 'rgba(255, 183, 3, 0.15)')   // Ánh sao hoàng kim
-];
-
-const nebulaPlanes = [];
-function buildCosmicNebula() {
-  const geo = new THREE.PlaneGeometry(920, 920);
-  for (let i = 0; i < 18; i++) {
-    const mat = new THREE.MeshBasicMaterial({
-      map: nebulaTextures[i % nebulaTextures.length],
-      transparent: true,
-      opacity: 0.72 + (i % 3) * 0.08,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      side: THREE.DoubleSide
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    const angle = (i / 18) * Math.PI * 2;
-    const dist = 360 + Math.random() * 560;
-    mesh.position.set(
-      Math.cos(angle) * dist + (Math.random() - 0.5) * 160,
-      ((i % 5) - 2) * 155 + (Math.random() - 0.5) * 110,
-      -360 - Math.random() * 620
-    );
-    mesh.rotation.z = Math.random() * Math.PI * 2;
-    const s = 0.95 + Math.random() * 1.4;
-    mesh.scale.set(s, s, 1);
-    mesh.userData = {
-      rotSpeed: (Math.random() - 0.5) * 0.00045,
-      pulseSpeed: 0.0008 + Math.random() * 0.0006,
-      baseScale: s,
-      phase: i * 1.3
-    };
-    nebulaGroup.add(mesh);
-    nebulaPlanes.push(mesh);
-  }
-}
-buildCosmicNebula();
-
 // 6.1 DẢI NGÂN HÀ XOẮN ỐC 3D
 const galaxyGroup = new THREE.Group();
 scene.add(galaxyGroup);
 
 function buildMilkyWayUniverse() {
-  const starCount = 7200;
+  const starCount = 5500;
   const positions = new Float32Array(starCount * 3);
   const colors = new Float32Array(starCount * 3);
   const palette = [
@@ -804,25 +725,24 @@ function buildMilkyWayUniverse() {
     new THREE.Color('#ff8fab'),
     new THREE.Color('#ffd166'),
     new THREE.Color('#c77dff'),
-    new THREE.Color('#72efdd'),
-    new THREE.Color('#ff4d8d')
+    new THREE.Color('#72efdd')
   ];
 
   for (let i = 0; i < starCount; i++) {
     const i3 = i * 3;
-    if (i < 4500) {
-      const r = Math.pow(Math.random(), 1.3) * 1550 + 60;
+    if (i < 3200) {
+      const r = Math.pow(Math.random(), 1.3) * 1450 + 60;
       const branchAngle = ((i % 3) / 3) * Math.PI * 2;
       const spinAngle = r * 0.0035;
-      const spread = (Math.random() - 0.5) * 260;
+      const spread = (Math.random() - 0.5) * 240;
 
       positions[i3] = Math.cos(branchAngle + spinAngle) * r + spread;
-      positions[i3 + 1] = (Math.random() - 0.5) * 350 - r * 0.08;
+      positions[i3 + 1] = (Math.random() - 0.5) * 320 - r * 0.08;
       positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * r - 350 + spread;
     } else {
-      positions[i3] = (Math.random() - 0.5) * 2800;
-      positions[i3 + 1] = (Math.random() - 0.5) * 1900;
-      positions[i3 + 2] = (Math.random() - 0.5) * 2300 - 200;
+      positions[i3] = (Math.random() - 0.5) * 2600;
+      positions[i3 + 1] = (Math.random() - 0.5) * 1800;
+      positions[i3 + 2] = (Math.random() - 0.5) * 2200 - 200;
     }
 
     const col = palette[i % palette.length];
@@ -836,11 +756,11 @@ function buildMilkyWayUniverse() {
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
   const mat = new THREE.PointsMaterial({
-    size: 9.5,
+    size: 9,
     map: starGlowTex,
     vertexColors: true,
     transparent: true,
-    opacity: 0.92,
+    opacity: 0.9,
     depthWrite: false,
     blending: THREE.AdditiveBlending
   });
@@ -983,9 +903,9 @@ const TOTAL_GLOBE_PATCHES = GLOBE_ROWS * GLOBE_COLS;
 const GLOBE_RADIUS = 152;
 const globePatches = [];
 
-const ARC_ROWS = 5;
-const ARC_COLS = 10;
-const TOTAL_ARC_CARDS = ARC_ROWS * ARC_COLS; // 50 tấm ảnh phẳng phiu, rõ nét phủ kín từ đỉnh xuống đáy!
+const ARC_ROWS = 3;
+const ARC_COLS = 9;
+const TOTAL_ARC_CARDS = ARC_ROWS * ARC_COLS; // 27 tấm ảnh chuẩn tỉ lệ 1:1 rõ nét cho Màn Hình Lõm Vòng Cung!
 const arcCards = [];
 
 function buildGlobeAndConcaveCards() {
@@ -1044,14 +964,14 @@ function buildGlobeAndConcaveCards() {
     }
   }
 
-  // 2. Tạo 50 tấm ảnh tỉ lệ 1:1 cho Màn Hình Lõm Vòng Cung (5 hàng ngang phủ kín 100% khoảng trống trên và dưới)
-  const cardW = 66;
-  const cardH = 66;
+  // 2. Tạo 27 tấm ảnh chuẩn tỉ lệ 1:1 cho Màn Hình Lõm Vòng Cung (3 hàng ngang)
+  const cardW = 70;
+  const cardH = 70;
   const cardGeo = new THREE.PlaneGeometry(cardW, cardH, 8, 1);
 
   for (let i = 0; i < TOTAL_ARC_CARDS; i++) {
-    const r = Math.floor(i / ARC_COLS); // Hàng 0 (đỉnh), 1 (trên), 2 (giữa), 3 (dưới), 4 (đáy)
-    const c = i % ARC_COLS;            // Cột 0..9
+    const r = Math.floor(i / ARC_COLS); // Hàng 0 (trên), 1 (giữa), 2 (dưới)
+    const c = i % ARC_COLS;            // Cột 0..8
 
     const mat = new THREE.MeshBasicMaterial({
       map: loadedThreeTextures[i % TOTAL_PHOTOS],
@@ -1068,9 +988,9 @@ function buildGlobeAndConcaveCards() {
       // Tiến trình ban đầu dọc theo vòng cung [0..1]
       progress: c / ARC_COLS,
       // Dùng cho cảnh Thả rơi đung đưa
-      isTopDropper: r <= 1,
-      dropY: (2 - r) * 70,
-      swayPhase: i * 0.75
+      isTopDropper: r === 0, // Hàng trên cùng sẽ thả rơi đung đưa mềm mại xuống!
+      dropY: (1 - r) * 76,
+      swayPhase: i * 1.1
     };
 
     concaveArcGroup.add(card);
@@ -1162,7 +1082,7 @@ function startFull3DCosmicJourney() {
         card.material.map = loadedThreeTextures[card.userData.photoIndex];
         card.material.needsUpdate = true;
         card.userData.progress = (i % ARC_COLS) / ARC_COLS;
-        card.userData.dropY = (2 - card.userData.row) * 70;
+        card.userData.dropY = (1 - card.userData.row) * 76;
       });
     }, 16000)
   );
@@ -1314,15 +1234,6 @@ function masterRenderLoop(now) {
   galaxyGroup.rotation.y += 0.0005;
   galaxyGroup.rotation.x = Math.sin(now * 0.00016) * 0.06;
 
-  // Xoay nhẹ nhàng và đập nhịp ánh sáng tinh vân đa sắc màu lãng mạn
-  nebulaGroup.rotation.y += 0.00022;
-  nebulaPlanes.forEach((mesh) => {
-    const u = mesh.userData;
-    mesh.rotation.z += u.rotSpeed;
-    const pulse = Math.sin(now * u.pulseSpeed + u.phase) * 0.12;
-    mesh.scale.setScalar(u.baseScale * (1 + pulse));
-  });
-
   if (currentPhase === 'intro') {
     renderMiniGlobe();
   }
@@ -1375,13 +1286,13 @@ function masterRenderLoop(now) {
     globeGroup.rotation.y += 0.0102;
     globeGroup.rotation.x = Math.sin(now * 0.0007) * 0.08;
   } else if (currentPhase === 'concave_wall') {
-    // ĐOẠN 3: MÀN HÌNH LÕM 5 HÀNG VÒNG CUNG PHỦ TRỌN TỪ ĐỈNH ĐẾN ĐÁY
-    // ẢNH CHẠY NGANG VÀ TỪ TỪ NỞ RỘ, ĐƯA LÊN TRÊN VÀ ĐƯA XUỐNG DƯỚI PHỦ KÍN HOÀN TOÀN KHOẢNG TRỐNG!
-    const arcSpanRad = Math.PI * 0.94; // Vòng cung mở rộng ~170 độ ôm trọn góc nhìn
-    const arcRadius = 345;
+    // ĐOẠN 3: MÀN HÌNH LÕM VÒNG CUNG CHẠY TỪ TRÁI SANG PHẢI
+    // HIỆU ỨNG BUNG NỞ: ẢNH TỪ TÂM TỪ TỪ ĐƯA DẦN LÊN TRÊN VÀ ĐƯA XUỐNG DƯỚI PHỦ KÍN KHOẢNG TRỐNG!
+    const arcSpanRad = Math.PI * 0.88; // Góc mở vòng cung ~158 độ phía trước mặt
+    const arcRadius = 340;
 
-    // Tiến trình bung nở dần ra phía trên và phía dưới
-    const expandProgress = Math.min(1, dtPhase / 3.0);
+    // Tiến trình bung nở đưa dần lên trên và xuống dưới
+    const expandProgress = Math.min(1, dtPhase / 2.8);
     const expandEase = 1 - Math.pow(1 - expandProgress, 3); // Cubic ease out mượt mà
 
     arcCards.forEach((card) => {
@@ -1399,24 +1310,19 @@ function masterRenderLoop(now) {
       const theta = (u.progress - 0.5) * arcSpanRad;
 
       const targetX = Math.sin(theta) * arcRadius;
-      const targetZ = 210 - Math.cos(theta) * (arcRadius * 0.76) - Math.abs(2 - u.row) * 14;
+      const targetZ = 210 - Math.cos(theta) * (arcRadius * 0.78);
 
-      // 5 hàng ảnh tỏa dần từ tâm ra phía trên và phía dưới để phủ kín hoàn toàn màn hình:
-      // Row 0: +144 (đỉnh trên)
-      // Row 1: +72  (trên)
-      // Row 2: 0    (chính giữa)
-      // Row 3: -72  (dưới)
-      // Row 4: -144 (đáy dưới)
-      const baseRowY = (2 - u.row) * 72;
-      const waveY = Math.sin(now * 0.0015 + u.progress * 4.2 + u.row * 0.8) * 8;
-      const targetY = (baseRowY * (0.38 + 0.62 * expandEase)) + waveY;
+      // Hiệu ứng bung nở: Hàng trên đẩy dần lên (+88), hàng dưới đẩy dần xuống (-88)
+      const baseRowY = (1 - u.row) * 88;
+      const waveY = Math.sin(now * 0.0014 + u.progress * 4.2 + u.row) * 8;
+      const targetY = (baseRowY * (0.35 + 0.65 * expandEase)) + waveY;
 
       card.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.09);
 
-      // Xoay mặt tấm ảnh vuông góc với cung lõm, hơi nghiêng theo chiều dọc tạo hiệu ứng vòm rạp chiếu phim
+      // Xoay mặt tấm ảnh vuông góc với tâm vòng cung lõm
       const targetRotY = -theta * 0.72;
       card.rotation.y += (targetRotY - card.rotation.y) * 0.1;
-      card.rotation.x += ((2 - u.row) * 0.055 - card.rotation.x) * 0.1;
+      card.rotation.x += ((1 - u.row) * 0.06 - card.rotation.x) * 0.1;
       card.rotation.z += (0 - card.rotation.z) * 0.1;
 
       // Làm mờ nhẹ ở 2 mép ngoài cùng để vòng lặp Trái -> Phải liền mạch tuyệt đối
@@ -1424,11 +1330,11 @@ function masterRenderLoop(now) {
       card.material.opacity = edgeDist > 0.88 ? (1 - edgeDist) / 0.12 : 1;
     });
   } else if (currentPhase === 'falling_letter') {
-    // ẢNH TRÔI BỀNH BỒNG Ở CẢ TRÊN VÀ DƯỚI NỀN PHONG THƯ TÌNH CẢM (KHÔNG ĐỂ TRỐNG TRÊN DƯỚI)
+    // ẢNH ĐI XUỐNG, MỘT VÀI BỨC ẢNH Ở TRÊN THẢ XUỐNG ĐUNG ĐƯA (KHÔNG RƠI THẲNG ĐỨNG) + CHẠY NỀN DƯỚI PHONG THƯ!
     const isLetterOpen = !openedLetterCard.classList.contains('hidden');
-    const baseOpacity = isLetterOpen ? 0.38 : 0.82;
-    const arcSpanRad = Math.PI * 0.94;
-    const arcRadius = 345;
+    const baseOpacity = isLetterOpen ? 0.42 : 0.86;
+    const arcSpanRad = Math.PI * 0.88;
+    const arcRadius = 340;
 
     arcCards.forEach((card, i) => {
       const u = card.userData;
@@ -1443,28 +1349,29 @@ function masterRenderLoop(now) {
       const baseX = Math.sin(theta) * arcRadius;
       const baseZ = 180 - Math.cos(theta) * (arcRadius * 0.72);
 
-      // Các hàng ảnh trên (row 0, 1) tiếp tục trôi bồng bềnh ở bầu trời phía trên lá thư
-      // Các hàng ảnh dưới (row 3, 4) tiếp tục trôi ở dải ngân hà phía dưới lá thư
-      // Hàng giữa (row 2) lượn nhẹ ở sau lưng lá thư
-      let destY;
-      if (u.row <= 1) {
-        destY = 115 + (1 - u.row) * 62 + Math.sin(now * 0.0016 + u.swayPhase) * 12;
-      } else if (u.row >= 3) {
-        destY = -115 - (u.row - 3) * 62 + Math.cos(now * 0.0014 + u.swayPhase) * 12;
-      } else {
-        destY = Math.sin(now * 0.0012 + u.swayPhase) * 16;
-      }
+      if (u.isTopDropper) {
+        // Hàng ảnh phía trên từ từ thả xuống với hiệu ứng lượn sóng đung đưa 3D (như cánh hoa rơi)
+        u.dropY -= 0.36;
+        if (u.dropY < -190) u.dropY = 165;
 
-      const swayX = baseX + Math.sin(now * 0.0013 + u.swayPhase) * 18;
-      card.position.lerp(new THREE.Vector3(swayX, destY, baseZ - 20), 0.07);
-      card.rotation.y += (-theta * 0.65 - card.rotation.y) * 0.08;
-      card.rotation.z = Math.sin(now * 0.0015 + u.swayPhase) * 0.12;
-      card.rotation.x = Math.cos(now * 0.0012 + u.swayPhase) * 0.1;
+        const swayX = baseX + Math.sin(now * 0.0016 + u.swayPhase) * 38;
+        const swayZ = baseZ + 35 + Math.cos(now * 0.0014 + u.swayPhase) * 25;
+
+        card.position.lerp(new THREE.Vector3(swayX, u.dropY, swayZ), 0.075);
+        card.rotation.z = Math.sin(now * 0.0016 + u.swayPhase) * 0.24;
+        card.rotation.x = Math.cos(now * 0.0013 + u.swayPhase) * 0.2;
+        card.rotation.y = -theta * 0.5;
+      } else {
+        // 2 hàng dưới tiếp tục chạy vòng cung Trái -> Phải dưới nền
+        const lowY = -95 - (u.row - 1) * 68;
+        card.position.lerp(new THREE.Vector3(baseX, lowY, baseZ - 30), 0.06);
+        card.rotation.y += (-theta * 0.65 - card.rotation.y) * 0.09;
+        card.rotation.z += (0 - card.rotation.z) * 0.09;
+      }
 
       const edgeDist = Math.abs(u.progress - 0.5) * 2;
       const edgeFade = edgeDist > 0.88 ? (1 - edgeDist) / 0.12 : 1;
-      const rowAlphaMul = (isLetterOpen && u.row === 2) ? 0.28 : 1.0;
-      card.material.opacity += (baseOpacity * edgeFade * rowAlphaMul - card.material.opacity) * 0.06;
+      card.material.opacity += (baseOpacity * edgeFade - card.material.opacity) * 0.06;
     });
   }
 
