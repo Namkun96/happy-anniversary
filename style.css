@@ -1423,3 +1423,34 @@ html, body {
   }
 }
 
+/* Floating Hint Pill khi phóng to ảnh */
+.photo-zoom-overlay {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.photo-zoom-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(14px);
+}
+.photo-zoom-pill {
+  background: rgba(30, 8, 48, 0.88);
+  border: 1px solid rgba(255, 209, 102, 0.7);
+  color: #ffd166;
+  padding: 8px 20px;
+  border-radius: 22px;
+  font-size: 0.84rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(255, 77, 141, 0.45);
+  backdrop-filter: blur(8px);
+  user-select: none;
+  text-align: center;
+}
+

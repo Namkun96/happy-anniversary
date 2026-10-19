@@ -964,9 +964,9 @@ function buildGlobeAndConcaveCards() {
     }
   }
 
-  // 2. Tạo 27 tấm ảnh chuẩn tỉ lệ 1:1 cho Màn Hình Lõm Vòng Cung (3 hàng ngang)
-  const cardW = 70;
-  const cardH = 70;
+  // 2. Tạo 27 tấm ảnh chuẩn tỉ lệ 1:1 to rõ nét cho Màn Hình Lõm Vòng Cung (3 hàng ngang)
+  const cardW = 88;
+  const cardH = 88;
   const cardGeo = new THREE.PlaneGeometry(cardW, cardH, 8, 1);
 
   for (let i = 0; i < TOTAL_ARC_CARDS; i++) {
@@ -987,10 +987,12 @@ function buildGlobeAndConcaveCards() {
       photoIndex: i % TOTAL_PHOTOS,
       // Tiến trình ban đầu dọc theo vòng cung [0..1]
       progress: c / ARC_COLS,
-      // Dùng cho cảnh Thả rơi đung đưa
-      isTopDropper: r === 0, // Hàng trên cùng sẽ thả rơi đung đưa mềm mại xuống!
-      dropY: (1 - r) * 76,
-      swayPhase: i * 1.1
+      // Dùng cho cảnh Thả rơi đung đưa & bay đa hướng
+      isTopDropper: r === 0,
+      dropY: (1 - r) * 94,
+      vertY: ((c / (ARC_COLS - 1)) - 0.5) * 440,
+      vertDir: (c % 2 === 0) ? 1 : -1,
+      swayPhase: i * 1.15
     };
 
     concaveArcGroup.add(card);
@@ -1000,6 +1002,132 @@ function buildGlobeAndConcaveCards() {
 
 loadAll30Photos(renderer.capabilities.getMaxAnisotropy());
 buildGlobeAndConcaveCards();
+
+// ==================== TÍNH NĂNG CHẠM PHÓNG TO ẢNH & TÍCH ĐÚP ĐỂ THU VỀ ====================
+let focusedCard = null;
+let isStreamPaused = false;
+let pointerDownPos = { x: 0, y: 0, time: 0 };
+let lastTapTime = 0;
+let isTouchTriggered = false;
+const raycaster = new THREE.Raycaster();
+const photoZoomOverlay = document.getElementById('photoZoomOverlay');
+
+function zoomCard(card) {
+  if (focusedCard && focusedCard !== card) {
+    focusedCard.renderOrder = 0;
+  }
+  focusedCard = card;
+  focusedCard.renderOrder = 999;
+  isStreamPaused = true;
+  if (photoZoomOverlay) photoZoomOverlay.classList.remove('hidden');
+}
+
+function unzoomCard() {
+  if (!focusedCard) return;
+  focusedCard.renderOrder = 0;
+  focusedCard = null;
+  isStreamPaused = false;
+  if (photoZoomOverlay) photoZoomOverlay.classList.add('hidden');
+}
+
+if (photoZoomOverlay) {
+  photoZoomOverlay.addEventListener('click', (e) => {
+    e.stopPropagation();
+    unzoomCard();
+  });
+  photoZoomOverlay.addEventListener('touchend', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    unzoomCard();
+  });
+}
+
+function isInteractiveDomTarget(target) {
+  if (!target) return false;
+  return !!target.closest('button, a, .cute-envelope, .opened-letter-card, .restaurant-card, #topHud, .intro-content, .photo-card-wrap');
+}
+
+function getPointerNDC(clientX, clientY) {
+  return new THREE.Vector2(
+    (clientX / window.innerWidth) * 2 - 1,
+    -(clientY / window.innerHeight) * 2 + 1
+  );
+}
+
+function handlePointerTap(clientX, clientY, targetEl) {
+  if (currentPhase !== 'concave_wall' && currentPhase !== 'falling_letter') return;
+  if (isInteractiveDomTarget(targetEl)) return;
+
+  const now = performance.now();
+  const timeSinceLastTap = now - lastTapTime;
+
+  // Tích đúp (double-tap / double-click): thu ảnh về và tiếp tục chạy
+  if (timeSinceLastTap < 380) {
+    if (focusedCard) {
+      unzoomCard();
+      lastTapTime = 0;
+      return;
+    }
+  }
+  lastTapTime = now;
+
+  const ndc = getPointerNDC(clientX, clientY);
+  raycaster.setFromCamera(ndc, camera);
+  const intersects = raycaster.intersectObjects(arcCards, false);
+
+  if (intersects.length > 0) {
+    const hitCard = intersects[0].object;
+    if (focusedCard === hitCard) {
+      // Nhấp vào ảnh đang phóng to: chờ tích đúp hoặc chạm ra ngoài
+    } else {
+      zoomCard(hitCard);
+    }
+  } else {
+    // Chạm vào khoảng trống vũ trụ
+    if (focusedCard) {
+      unzoomCard();
+    }
+  }
+}
+
+window.addEventListener('touchstart', (e) => {
+  if (e.touches && e.touches.length === 1) {
+    pointerDownPos = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: performance.now() };
+  }
+}, { passive: true });
+
+window.addEventListener('touchend', (e) => {
+  if (e.changedTouches && e.changedTouches.length === 1) {
+    isTouchTriggered = true;
+    setTimeout(() => { isTouchTriggered = false; }, 400);
+    const t = e.changedTouches[0];
+    const dx = Math.abs(t.clientX - pointerDownPos.x);
+    const dy = Math.abs(t.clientY - pointerDownPos.y);
+    if (dx < 16 && dy < 16) {
+      handlePointerTap(t.clientX, t.clientY, e.target);
+    }
+  }
+}, { passive: true });
+
+window.addEventListener('mousedown', (e) => {
+  pointerDownPos = { x: e.clientX, y: e.clientY, time: performance.now() };
+});
+
+window.addEventListener('click', (e) => {
+  if (isTouchTriggered) return;
+  const dx = Math.abs(e.clientX - pointerDownPos.x);
+  const dy = Math.abs(e.clientY - pointerDownPos.y);
+  if (dx < 14 && dy < 14) {
+    handlePointerTap(e.clientX, e.clientY, e.target);
+  }
+});
+
+window.addEventListener('dblclick', (e) => {
+  if (isInteractiveDomTarget(e.target)) return;
+  if (focusedCard) {
+    unzoomCard();
+  }
+});
 
 // ==================== 7. KỊCH BẢN CHUYỂN CẢNH TỰ ĐỘNG LIÊN HOÀN ====================
 let currentPhase = 'intro';
@@ -1036,6 +1164,7 @@ document.getElementById('miniGlobeBtn').addEventListener('click', () => {
 function startFull3DCosmicJourney() {
   sendTelegramEvent('cosmos', '💖 <b>Vợ vừa bấm Mảnh Ghép Trái Tim!</b>\n🌌 Đang bước vào Hành trình dải ngân hà & 49 bức ảnh kỷ niệm 5 năm!');
   clearStageTimers();
+  if (focusedCard) unzoomCard();
   showDomScene('sceneCosmos');
   document.getElementById('interleavedBanner').classList.remove('dimmed');
   document.getElementById('letterOverlay').classList.add('hidden');
@@ -1061,7 +1190,7 @@ function startFull3DCosmicJourney() {
       currentPhase = 'converge_globe';
       phaseStartTime = performance.now();
       textOrbitGroup.visible = false;
-    }, 5200)
+    }, 7700)
   );
 
   // --- GIAI ĐOẠN C (~15 GIÂY): BUNG RA MÀN HÌNH LÕM VÒNG CUNG, CUỘN ĐẦY ĐỦ TRỌN VẸN TOÀN BỘ 49 BỨC ẢNH ---
@@ -1077,28 +1206,37 @@ function startFull3DCosmicJourney() {
       arcCards.forEach((card, i) => {
         card.position.set((Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80);
         card.rotation.set(0, 0, 0);
+        card.scale.set(1, 1, 1);
         card.material.opacity = 1;
         card.userData.photoIndex = i % TOTAL_PHOTOS;
         card.material.map = loadedThreeTextures[card.userData.photoIndex];
         card.material.needsUpdate = true;
         card.userData.progress = (i % ARC_COLS) / ARC_COLS;
-        card.userData.dropY = (1 - card.userData.row) * 76;
+        card.userData.dropY = (1 - card.userData.row) * 94;
       });
-    }, 16000)
+    }, 18500)
   );
 
-  // --- GIAI ĐOẠN D: ẢNH HẠ XUỐNG THẢ RƠI ĐUNG ĐƯA NỀN + HIỆN PHONG THƯ TÌNH CẢM ---
+  // --- GIAI ĐOẠN D: DẢI ĐỀU ẢNH MỜ DƯỚI NỀN Ở CẢ TRÊN VÀ DƯỚI + HIỆN PHONG THƯ TÌNH CẢM ---
   stageTimers.push(
     setTimeout(() => {
-      currentPhase = 'falling_letter';
-      phaseStartTime = performance.now();
+      function tryTransitionToLetter() {
+        if (focusedCard) {
+          const waitT = setTimeout(tryTransitionToLetter, 2200);
+          stageTimers.push(waitT);
+          return;
+        }
+        currentPhase = 'falling_letter';
+        phaseStartTime = performance.now();
 
-      setTimeout(() => {
-        // Ẩn thanh tiêu đề phía trên khi hiện phong thư để không bao giờ đè chữ trên điện thoại
-        document.getElementById('interleavedBanner').classList.add('dimmed');
-        document.getElementById('letterOverlay').classList.remove('hidden');
-      }, 2500);
-    }, 31000)
+        setTimeout(() => {
+          // Ẩn thanh tiêu đề phía trên khi hiện phong thư để không bao giờ đè chữ trên điện thoại
+          document.getElementById('interleavedBanner').classList.add('dimmed');
+          document.getElementById('letterOverlay').classList.remove('hidden');
+        }, 2500);
+      }
+      tryTransitionToLetter();
+    }, 33500)
   );
 }
 
@@ -1246,12 +1384,12 @@ function masterRenderLoop(now) {
   const dtPhase = (now - phaseStartTime) / 1000;
 
   if (currentPhase === 'saturn_orbit') {
-    saturnGroup.rotation.y += 0.009;
+    saturnGroup.rotation.y += 0.0078;
     orbitSprites.forEach((sp) => {
-      sp.userData.angle += sp.userData.speed * 0.52;
+      sp.userData.angle += sp.userData.speed * 0.46;
       sp.position.set(
         Math.cos(sp.userData.angle) * sp.userData.radius,
-        sp.userData.y + Math.sin(now * 0.0014 + sp.userData.angle) * 10,
+        sp.userData.y + Math.sin(now * 0.0013 + sp.userData.angle) * 9,
         Math.sin(sp.userData.angle) * sp.userData.radius
       );
     });
@@ -1260,10 +1398,10 @@ function masterRenderLoop(now) {
       mesh.visible = i < 36;
       mesh.material.opacity = 0.95;
       const u = mesh.userData;
-      u.orbitAngle += 0.0055;
+      u.orbitAngle += 0.0048; // Nhanh vừa vặn, thanh thoát và lãng mạn
       const tx = Math.cos(u.orbitAngle) * u.orbitR;
       const tz = Math.sin(u.orbitAngle) * u.orbitR;
-      const ty = u.orbitY + Math.sin(now * 0.0014 + i) * 12;
+      const ty = u.orbitY + Math.sin(now * 0.0013 + i) * 11;
 
       mesh.position.lerp(new THREE.Vector3(tx, ty, tz), 0.06);
       mesh.rotation.y = -u.orbitAngle;
@@ -1295,9 +1433,11 @@ function masterRenderLoop(now) {
     const expandProgress = Math.min(1, dtPhase / 2.8);
     const expandEase = 1 - Math.pow(1 - expandProgress, 3); // Cubic ease out mượt mà
 
+    const speed = isStreamPaused ? 0 : 0.00135;
+
     arcCards.forEach((card) => {
       const u = card.userData;
-      u.progress += 0.00135;
+      u.progress += speed;
       if (u.progress >= 1) {
         u.progress -= 1;
         // Bức ảnh vừa chạy hết mép Phải -> đổi sang bức ảnh tiếp theo trong số 49 ảnh
@@ -1312,66 +1452,169 @@ function masterRenderLoop(now) {
       const targetX = Math.sin(theta) * arcRadius;
       const targetZ = 210 - Math.cos(theta) * (arcRadius * 0.78);
 
-      // Hiệu ứng bung nở: Hàng trên đẩy dần lên (+88), hàng dưới đẩy dần xuống (-88)
-      const baseRowY = (1 - u.row) * 88;
-      const waveY = Math.sin(now * 0.0014 + u.progress * 4.2 + u.row) * 8;
-      const targetY = (baseRowY * (0.35 + 0.65 * expandEase)) + waveY;
+      // Hiệu ứng bung nở: Hàng trên đẩy dần lên (+96), hàng dưới đẩy dần xuống (-96)
+      const baseRowY = (1 - u.row) * 96;
+      const waveY = isStreamPaused ? 0 : Math.sin(now * 0.0014 + u.progress * 4.2 + u.row) * 8;
+      const targetY = (baseRowY * (0.32 + 0.68 * expandEase)) + waveY;
 
-      card.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.09);
+      if (card === focusedCard) {
+        // TẤM ẢNH ĐƯỢC BẤM: PHÓNG TO RA CHÍNH GIỮA MÀN HÌNH ĐỂ NGẮM RÕ NÉT!
+        const isMobile = camera.aspect < 0.72;
+        const zoomDist = isMobile ? 195 : 215;
+        const zoomScale = isMobile ? 1.52 : 2.05;
 
-      // Xoay mặt tấm ảnh vuông góc với tâm vòng cung lõm
-      const targetRotY = -theta * 0.72;
-      card.rotation.y += (targetRotY - card.rotation.y) * 0.1;
-      card.rotation.x += ((1 - u.row) * 0.06 - card.rotation.x) * 0.1;
-      card.rotation.z += (0 - card.rotation.z) * 0.1;
+        const zoomTarget = new THREE.Vector3(
+          camera.position.x,
+          camera.position.y - (isMobile ? 14 : 8),
+          camera.position.z - zoomDist
+        );
+        card.position.lerp(zoomTarget, 0.12);
+        card.rotation.x += (0 - card.rotation.x) * 0.14;
+        card.rotation.y += (0 - card.rotation.y) * 0.14;
+        card.rotation.z += (0 - card.rotation.z) * 0.14;
+        card.scale.lerp(new THREE.Vector3(zoomScale, zoomScale, 1), 0.12);
+        card.material.opacity += (1.0 - card.material.opacity) * 0.15;
+      } else {
+        card.scale.lerp(new THREE.Vector3(1, 1, 1), 0.12);
+        card.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.09);
 
-      // Làm mờ nhẹ ở 2 mép ngoài cùng để vòng lặp Trái -> Phải liền mạch tuyệt đối
-      const edgeDist = Math.abs(u.progress - 0.5) * 2; // 0 ở tâm, 1 ở sát mép
-      card.material.opacity = edgeDist > 0.88 ? (1 - edgeDist) / 0.12 : 1;
+        // Xoay mặt tấm ảnh vuông góc với tâm vòng cung lõm
+        const targetRotY = -theta * 0.72;
+        card.rotation.y += (targetRotY - card.rotation.y) * 0.1;
+        card.rotation.x += ((1 - u.row) * 0.06 - card.rotation.x) * 0.1;
+        card.rotation.z += (0 - card.rotation.z) * 0.1;
+
+        // Làm mờ nhẹ ở 2 mép ngoài cùng để vòng lặp Trái -> Phải liền mạch tuyệt đối
+        const edgeDist = Math.abs(u.progress - 0.5) * 2; // 0 ở tâm, 1 ở sát mép
+        const normalOpacity = edgeDist > 0.88 ? (1 - edgeDist) / 0.12 : 1;
+        const targetOpacity = focusedCard ? normalOpacity * 0.22 : normalOpacity;
+        card.material.opacity += (targetOpacity - card.material.opacity) * 0.12;
+      }
     });
   } else if (currentPhase === 'falling_letter') {
-    // ẢNH ĐI XUỐNG, MỘT VÀI BỨC ẢNH Ở TRÊN THẢ XUỐNG ĐUNG ĐƯA (KHÔNG RƠI THẲNG ĐỨNG) + CHẠY NỀN DƯỚI PHONG THƯ!
+    // ẢNH NỀN CHẠY ĐA HƯỚNG: TRÊN TRÔI NGANG BỒNG BỀNH, DƯỚI TRÔI NGƯỢC CHIỀU, HAI BÊN CHẠY LÊN XUỐNG KHÔNG BỊ THIỆP CHE!
     const isLetterOpen = !openedLetterCard.classList.contains('hidden');
-    const baseOpacity = isLetterOpen ? 0.42 : 0.86;
-    const arcSpanRad = Math.PI * 0.88;
-    const arcRadius = 340;
+    // Khi đang đọc thư thì mờ dịu mắt (0.35), khi đang là phong bì thì sáng hơn (0.62)
+    const baseOpacity = isLetterOpen ? 0.35 : 0.62;
+    const arcSpanRad = Math.PI * 0.94;
+    const arcRadius = 355;
+    const speed = isStreamPaused ? 0 : 0.00095;
 
     arcCards.forEach((card, i) => {
       const u = card.userData;
-      u.progress += 0.00085;
-      if (u.progress >= 1) {
-        u.progress -= 1;
-        u.photoIndex = (u.photoIndex + TOTAL_ARC_CARDS) % TOTAL_PHOTOS;
-        card.material.map = loadedThreeTextures[u.photoIndex];
-        card.material.needsUpdate = true;
-      }
-      const theta = (u.progress - 0.5) * arcSpanRad;
-      const baseX = Math.sin(theta) * arcRadius;
-      const baseZ = 180 - Math.cos(theta) * (arcRadius * 0.72);
 
-      if (u.isTopDropper) {
-        // Hàng ảnh phía trên từ từ thả xuống với hiệu ứng lượn sóng đung đưa 3D (như cánh hoa rơi)
-        u.dropY -= 0.36;
-        if (u.dropY < -190) u.dropY = 165;
+      if (card === focusedCard) {
+        const isMobile = camera.aspect < 0.72;
+        const zoomDist = isMobile ? 195 : 215;
+        const zoomScale = isMobile ? 1.52 : 2.05;
 
-        const swayX = baseX + Math.sin(now * 0.0016 + u.swayPhase) * 38;
-        const swayZ = baseZ + 35 + Math.cos(now * 0.0014 + u.swayPhase) * 25;
-
-        card.position.lerp(new THREE.Vector3(swayX, u.dropY, swayZ), 0.075);
-        card.rotation.z = Math.sin(now * 0.0016 + u.swayPhase) * 0.24;
-        card.rotation.x = Math.cos(now * 0.0013 + u.swayPhase) * 0.2;
-        card.rotation.y = -theta * 0.5;
+        const zoomTarget = new THREE.Vector3(
+          camera.position.x,
+          camera.position.y - (isMobile ? 14 : 8),
+          camera.position.z - zoomDist
+        );
+        card.position.lerp(zoomTarget, 0.12);
+        card.rotation.x += (0 - card.rotation.x) * 0.14;
+        card.rotation.y += (0 - card.rotation.y) * 0.14;
+        card.rotation.z += (0 - card.rotation.z) * 0.14;
+        card.scale.lerp(new THREE.Vector3(zoomScale, zoomScale, 1), 0.12);
+        card.material.opacity += (1.0 - card.material.opacity) * 0.15;
       } else {
-        // 2 hàng dưới tiếp tục chạy vòng cung Trái -> Phải dưới nền
-        const lowY = -95 - (u.row - 1) * 68;
-        card.position.lerp(new THREE.Vector3(baseX, lowY, baseZ - 30), 0.06);
-        card.rotation.y += (-theta * 0.65 - card.rotation.y) * 0.09;
-        card.rotation.z += (0 - card.rotation.z) * 0.09;
-      }
+        card.scale.lerp(new THREE.Vector3(1, 1, 1), 0.12);
 
-      const edgeDist = Math.abs(u.progress - 0.5) * 2;
-      const edgeFade = edgeDist > 0.88 ? (1 - edgeDist) / 0.12 : 1;
-      card.material.opacity += (baseOpacity * edgeFade - card.material.opacity) * 0.06;
+        let targetX = 0;
+        let targetY = 0;
+        let targetZ = 120;
+        let normalOpacity = baseOpacity;
+
+        if (u.row === 0) {
+          // NHÓM 1 (HÀNG TRÊN): Trôi ngang từ Trái sang Phải + Đung đưa lượn sóng lên xuống phía trên bức thư
+          u.progress += speed;
+          if (u.progress >= 1) {
+            u.progress -= 1;
+            u.photoIndex = (u.photoIndex + TOTAL_ARC_CARDS) % TOTAL_PHOTOS;
+            card.material.map = loadedThreeTextures[u.photoIndex];
+            card.material.needsUpdate = true;
+          }
+          const theta = (u.progress - 0.5) * arcSpanRad;
+          targetX = Math.sin(theta) * arcRadius;
+          targetZ = 120 - Math.cos(theta) * (arcRadius * 0.72);
+
+          const topBaseY = isLetterOpen ? 156 : 128;
+          targetY = topBaseY + Math.sin(now * 0.0016 + u.swayPhase) * 32;
+
+          card.rotation.y += (-theta * 0.65 - card.rotation.y) * 0.09;
+          card.rotation.x += (Math.cos(now * 0.0012 + u.swayPhase) * 0.12 - card.rotation.x) * 0.09;
+          card.rotation.z += (Math.sin(now * 0.0014 + u.swayPhase) * 0.16 - card.rotation.z) * 0.09;
+
+          const edgeDist = Math.abs(u.progress - 0.5) * 2;
+          const edgeFade = edgeDist > 0.88 ? (1 - edgeDist) / 0.12 : 1;
+          normalOpacity = baseOpacity * edgeFade;
+
+        } else if (u.row === 2) {
+          // NHÓM 2 (HÀNG DƯỚI): Trôi ngang từ Phải sang Trái (ngược chiều) + Lượn sóng lên xuống dưới đáy bức thư
+          u.progress += speed;
+          if (u.progress >= 1) {
+            u.progress -= 1;
+            u.photoIndex = (u.photoIndex + TOTAL_ARC_CARDS) % TOTAL_PHOTOS;
+            card.material.map = loadedThreeTextures[u.photoIndex];
+            card.material.needsUpdate = true;
+          }
+          const theta = (0.5 - u.progress) * arcSpanRad;
+          targetX = Math.sin(theta) * arcRadius;
+          targetZ = 120 - Math.cos(theta) * (arcRadius * 0.72);
+
+          const btmBaseY = isLetterOpen ? -156 : -128;
+          targetY = btmBaseY - Math.sin(now * 0.0018 + u.swayPhase) * 32;
+
+          card.rotation.y += (-theta * 0.65 - card.rotation.y) * 0.09;
+          card.rotation.x += (-Math.cos(now * 0.0012 + u.swayPhase) * 0.12 - card.rotation.x) * 0.09;
+          card.rotation.z += (-Math.sin(now * 0.0014 + u.swayPhase) * 0.16 - card.rotation.z) * 0.09;
+
+          const edgeDist = Math.abs(u.progress - 0.5) * 2;
+          const edgeFade = edgeDist > 0.88 ? (1 - edgeDist) / 0.12 : 1;
+          normalOpacity = baseOpacity * edgeFade;
+
+        } else {
+          // NHÓM 3 (HÀNG GIỮA): CHẠY DỌC LÊN XUỐNG 2 BÊN CÁNH TRÁI / PHẢI — KHÔNG BAO GIỜ BỊ BỨC THƯ CHE MẤT!
+          if (u.vertY === undefined) u.vertY = ((u.col / (ARC_COLS - 1)) - 0.5) * 440;
+          if (u.vertDir === undefined) u.vertDir = (u.col % 2 === 0) ? 1 : -1;
+
+          if (!isStreamPaused) {
+            u.vertY += (0.44 + (u.col % 3) * 0.12) * u.vertDir;
+            if (u.vertDir > 0 && u.vertY > 250) {
+              u.vertY = -250;
+              u.photoIndex = (u.photoIndex + TOTAL_ARC_CARDS) % TOTAL_PHOTOS;
+              card.material.map = loadedThreeTextures[u.photoIndex];
+              card.material.needsUpdate = true;
+            } else if (u.vertDir < 0 && u.vertY < -250) {
+              u.vertY = 250;
+              u.photoIndex = (u.photoIndex + TOTAL_ARC_CARDS) % TOTAL_PHOTOS;
+              card.material.map = loadedThreeTextures[u.photoIndex];
+              card.material.needsUpdate = true;
+            }
+          }
+
+          const side = (u.col % 2 === 0) ? -1 : 1;
+          const flankDist = isLetterOpen ? (camera.aspect < 0.72 ? 182 : 230) : 170;
+          const flankSway = Math.sin(now * 0.0013 + u.swayPhase) * 25;
+          targetX = side * (flankDist + (u.col % 3) * 22) + flankSway;
+          targetY = u.vertY;
+          targetZ = 135 + Math.cos(now * 0.0011 + u.swayPhase) * 30;
+
+          card.rotation.z += (Math.sin(now * 0.0015 + u.swayPhase) * 0.22 - card.rotation.z) * 0.09;
+          card.rotation.x += (Math.cos(now * 0.0013 + u.swayPhase) * 0.16 - card.rotation.x) * 0.09;
+          card.rotation.y += ((-side * 0.32 + Math.sin(now * 0.001 + u.swayPhase) * 0.14) - card.rotation.y) * 0.09;
+
+          const edgeDistY = Math.abs(u.vertY) / 250;
+          const edgeFade = edgeDistY > 0.85 ? (1 - edgeDistY) / 0.15 : 1;
+          normalOpacity = baseOpacity * Math.max(0, edgeFade);
+        }
+
+        card.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.065);
+        const targetOpacity = focusedCard ? normalOpacity * 0.22 : normalOpacity;
+        card.material.opacity += (targetOpacity - card.material.opacity) * 0.08;
+      }
     });
   }
 
