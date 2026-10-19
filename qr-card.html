@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trang Quản Trị Của Ck: Chèn 16 Ảnh, Nhạc &amp; Tạo Thiệp QR 00:00</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Dancing+Script:wght@700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --bg: #070312;
+      --card: rgba(26, 11, 46, 0.88);
+      --rose: #ff4d8d;
+      --gold: #ffd166;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f0a3d 0%, #070312 70%);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      padding: 28px 16px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .top-bar {
+      width: 100%;
+      max-width: 1020px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .back-link {
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 9px 18px;
+      border-radius: 99px;
+      border: 1px solid rgba(255, 209, 102, 0.45);
+      background: rgba(255, 255, 255, 0.06);
+      font-weight: 600;
+    }
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr 410px;
+      gap: 28px;
+      width: 100%;
+      max-width: 1020px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .studio-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid rgba(255, 182, 213, 0.28);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6);
+      margin-bottom: 22px;
+    }
+    h1, h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.75rem;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 0.86rem;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #ffb3c6;
+      margin-bottom: 6px;
+    }
+    input[type="text"],
+    input[type="file"] {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(10, 4, 22, 0.85);
+      color: #fff;
+      font-size: 0.86rem;
+      font-family: inherit;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--rose);
+      box-shadow: 0 0 12px rgba(255, 77, 141, 0.4);
+    }
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .btn {
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: inherit;
+      font-size: 0.88rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #ff4d8d, #9d4edd);
+      color: #fff;
+      box-shadow: 0 0 22px rgba(255, 77, 141, 0.5);
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #ffd166, #ff9e00);
+      color: #1d092b;
+      box-shadow: 0 0 22px rgba(255, 209, 102, 0.45);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .status-msg {
+      margin-top: 12px;
+      font-size: 0.84rem;
+      color: #72efdd;
+      font-weight: 500;
+    }
+    .card-preview-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 20px;
+    }
+    #qrPosterCanvas {
+      width: 100%;
+      max-width: 390px;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 77, 141, 0.35);
+      border: 1px solid rgba(255, 209, 102, 0.35);
+    }
+    #hiddenQrContainer {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a href="index.html" target="_blank" class="back-link">👁️ Mở Xem Trang Quà Tặng Của Vk (index.html) ↗</a>
+    <span style="font-size: 0.82rem; color: #ffd166;">🔒 Trang Quản Trị Dành Riêng Cho Ck (Vk Không Thấy Trang Này)</span>
+  </div>
+
+  <div class="studio-grid">
+    <!-- CỘT TRÁI -->
+    <div>
+      <!-- BƯỚC 1: THÊM 30 ẢNH & NHẠC -->
+      <div class="panel">
+        <h2>📸 Bước 1: Thêm Bộ Ảnh (Tối đa 30 tấm) &amp; Nhạc Nền</h2>
+        <p class="subtitle">
+          Bạn có thể bôi đen chọn <strong>30 bức ảnh</strong> (hoặc bất kỳ số lượng ảnh nào bạn có) và bài nhạc MP3 ở dưới đây rồi bấm <strong>"Lưu Vào Dự Án"</strong>. Hệ thống sẽ tự động lưu vào thư mục <code>images/1.jpg -> 30.jpg</code> và <code>music.mp3</code>!
+        </p>
+
+        <div class="form-group">
+          <label>🖼️ Chọn bộ ảnh kỷ niệm (Chọn khoảng 30 tấm cùng lúc):</label>
+          <input type="file" id="adminPhotosInput" accept="image/*" multiple />
+        </div>
+
+        <div class="form-group">
+          <label>🎵 Chọn file nhạc nền kỷ niệm (.mp3, .wav, .m4a):</label>
+          <input type="file" id="adminMusicInput" accept="audio/*" />
+        </div>
+
+        <div class="btn-row">
+          <button id="saveMediaBtn" class="btn btn-primary">💾 Lưu Bộ Ảnh &amp; Nhạc Vào Dự Án</button>
+        </div>
+        <div id="saveStatus" class="status-msg"></div>
+      </div>
+
+      <!-- BƯỚC 2: TẠO THIỆP QR -->
+      <div class="panel">
+        <h2>📱 Bước 2: Tạo Thiệp QR Vũ Trụ 00:00 (Gửi Cho Vk)</h2>
+        <p class="subtitle">
+          Mã QR này dẫn thẳng tới trang quà tặng <code>index.html</code> (nơi vk chỉ xem quà và nghe nhạc, không có nút cài đặt).
+        </p>
+
+        <div class="form-group">
+          <label>🔗 Đường dẫn (Link URL) khi vk quét mã QR:</label>
+          <input type="text" id="qrUrlInput" value="" placeholder="Dán link GitHub/Netlify hoặc link Wi-Fi nội bộ..." />
+        </div>
+
+        <div class="form-group">
+          <label>💌 Tiêu đề trên thiệp QR:</label>
+          <input type="text" id="cardTitleInput" value="Món Quà Bất Ngờ Lúc 00:00" />
+        </div>
+
+        <div class="form-group">
+          <label>✨ Lời nhắn dưới mã QR:</label>
+          <input type="text" id="cardSubInput" value="Chúc mừng nửa thập kỷ của chúng ta • Ck yêu vk ❤️" />
+        </div>
+
+        <div class="btn-row">
+          <button id="renderCardBtn" class="btn btn-primary">🔄 Cập Nhật Thiệp QR</button>
+          <button id="downloadCardBtn" class="btn btn-gold">📥 Tải Ảnh Thiệp QR (Gửi Cho Vk)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CỘT PHẢI: XEM TRƯỚC THIỆP QR CANVAS -->
+    <div class="card-preview-wrap">
+      <canvas id="qrPosterCanvas" width="900" height="1280"></canvas>
+      <div id="hiddenQrContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== XỬ LÝ LƯU 30 ẢNH & NHẠC VÀO THƯ MỤC DỰ ÁN ====================
+    const adminPhotosInput = document.getElementById('adminPhotosInput');
+    const adminMusicInput = document.getElementById('adminMusicInput');
+    const saveMediaBtn = document.getElementById('saveMediaBtn');
+    const saveStatus = document.getElementById('saveStatus');
+
+    function compressImageFile(file, maxDim = 1080, quality = 0.86) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+            const c = document.createElement('canvas');
+            c.width = w;
+            c.height = h;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(c.toDataURL('image/jpeg', quality));
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve(ev.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    saveMediaBtn.addEventListener('click', async () => {
+      const photoFiles = Array.from(adminPhotosInput.files);
+      const musicFile = adminMusicInput.files[0];
+
+      if (!photoFiles.length && !musicFile) {
+        saveStatus.style.color = '#ffd166';
+        saveStatus.textContent = '⚠️ Hãy chọn ảnh hoặc file nhạc trước khi bấm Lưu nhé!';
+        return;
+      }
+
+      saveStatus.style.color = '#72efdd';
+      saveStatus.textContent = '⏳ Đang xử lý và lưu vào thư mục dự án...';
+
+      const payload = {};
+      if (photoFiles.length > 0) {
+        const photosBase64 = [];
+        for (let i = 0; i < 30; i++) {
+          const f = photoFiles[i % photoFiles.length];
+          photosBase64.push(await compressImageFile(f));
+        }
+        payload.photos = photosBase64;
+      }
+
+      if (musicFile) {
+        payload.music = await readFileAsDataURL(musicFile);
+      }
+
+      try {
+        const res = await fetch('/api/save-media', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          saveStatus.style.color = '#72efdd';
+          saveStatus.textContent = '✅ Đã lưu thành công vào thư mục dự án! Bạn có thể mở trang index.html hoặc quét QR trên điện thoại để xem ngay!';
+        } else {
+          saveStatus.style.color = '#ff6b8b';
+          saveStatus.textContent = '❌ Lỗi: ' + (data.error || 'Không thể lưu file');
+        }
+      } catch (err) {
+        saveStatus.style.color = '#ff6b8b';
+        saveStatus.textContent = '❌ Hãy đảm bảo bạn đang mở trang này qua http://localhost:5500/qr-card.html';
+      }
+    });
+
+    // ==================== XỬ LÝ TẠO THIỆP QR ====================
+    const qrUrlInput = document.getElementById('qrUrlInput');
+    const cardTitleInput = document.getElementById('cardTitleInput');
+    const cardSubInput = document.getElementById('cardSubInput');
+    const posterCanvas = document.getElementById('qrPosterCanvas');
+    const ctx = posterCanvas.getContext('2d');
+    const hiddenQr = document.getElementById('hiddenQrContainer');
+
+    let defaultUrl = window.location.href.replace(/qr-card\.html.*$/, 'index.html');
+    qrUrlInput.value = defaultUrl;
+
+    fetch('/api/lan-info')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && data.url && qrUrlInput.value.includes('localhost')) {
+          defaultUrl = data.url;
+          qrUrlInput.value = data.url;
+          generateQrCard();
+        }
+      })
+      .catch(() => {});
+
+    function generateQrCard() {
+      const targetUrl = qrUrlInput.value.trim() || defaultUrl;
+      const titleText = cardTitleInput.value.trim() || 'Món Quà Bất Ngờ Lúc 00:00';
+      const subText = cardSubInput.value.trim() || 'Chúc mừng nửa thập kỷ của chúng ta ❤️';
+
+      hiddenQr.innerHTML = '';
+      new QRCode(hiddenQr, {
+        text: targetUrl,
+        width: 460,
+        height: 460,
+        colorDark: '#1b0633',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      setTimeout(() => {
+        const qrImgOrCanvas = hiddenQr.querySelector('canvas') || hiddenQr.querySelector('img');
+        drawRomanticPoster(qrImgOrCanvas, titleText, subText);
+      }, 120);
+    }
+
+    function drawRomanticPoster(qrSource, titleText, subText) {
+      const W = posterCanvas.width;
+      const H = posterCanvas.height;
+
+      const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 50, W / 2, H / 2, H * 0.85);
+      bgGrad.addColorStop(0, '#380d5e');
+      bgGrad.addColorStop(0.45, '#190630');
+      bgGrad.addColorStop(1, '#06020e');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      for (let i = 0; i < 160; i++) {
+        const sx = (Math.sin(i * 78.233) * 0.5 + 0.5) * W;
+        const sy = (Math.cos(i * 45.164) * 0.5 + 0.5) * H;
+        const r = (i % 3) + 1;
+        ctx.fillStyle = i % 4 === 0 ? '#ffd166' : i % 3 === 0 ? '#ff8fab' : '#ffffff';
+        ctx.globalAlpha = 0.25 + (i % 7) * 0.1;
+        ctx.beginPath();
+        ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = 'rgba(255, 209, 102, 0.55)';
+      ctx.lineWidth = 3;
+      roundRect(ctx, 42, 42, W - 84, H - 84, 34);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255, 77, 141, 0.35)';
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, 56, 56, W - 112, H - 112, 26);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffd166';
+      ctx.font = '600 24px Montserrat, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('✨ 20.10.2021  —  20.10.2026 ✨', W / 2, 130);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 62px "Dancing Script", cursive';
+      ctx.shadowColor = 'rgba(255, 77, 141, 0.85)';
+      ctx.shadowBlur = 24;
+      ctx.fillText(titleText, W / 2, 220);
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = '#ffb3c6';
+      ctx.font = '500 26px Montserrat, sans-serif';
+      ctx.fillText('KỶ NIỆM 5 NĂM YÊU NHAU • NỬA THẬP KỶ BÊN NHAU', W / 2, 278);
+
+      const qrBoxSize = 520;
+      const qrBoxX = (W - qrBoxSize) / 2;
+      const qrBoxY = 340;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(255, 77, 141, 0.65)';
+      ctx.shadowBlur = 45;
+      ctx.fillStyle = '#ffffff';
+      roundRect(ctx, qrBoxX, qrBoxY, qrBoxSize, qrBoxSize, 36);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.strokeStyle = '#ffd166';
+      ctx.lineWidth = 5;
+      roundRect(ctx, qrBoxX, qrBoxY, qrBoxSize, qrBoxSize, 36);
+      ctx.stroke();
+
+      if (qrSource) {
+        ctx.drawImage(qrSource, qrBoxX + 30, qrBoxY + 30, qrBoxSize - 60, qrBoxSize - 60);
+      }
+
+      const centerX = W / 2;
+      const centerY = qrBoxY + qrBoxSize / 2;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 48, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ff2a75';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 40, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 34px sans-serif';
+      ctx.fillText('❤️', centerX, centerY + 12);
+
+      ctx.fillStyle = '#ffd166';
+      ctx.font = '700 44px "Dancing Script", cursive';
+      ctx.fillText(subText, W / 2, 955);
+
+      ctx.fillStyle = 'rgba(255, 240, 246, 0.9)';
+      ctx.font = '400 24px Montserrat, sans-serif';
+      ctx.fillText('📱 Vk yêu hãy mở Camera điện thoại và quét mã QR này nhé!', W / 2, 1025);
+      ctx.fillText('🎧 Đừng quên bật âm lượng để lắng nghe giai điệu của chúng mình', W / 2, 1068);
+
+      ctx.fillStyle = '#ff8fab';
+      ctx.font = '600 25px Montserrat, sans-serif';
+      ctx.fillText('💖 Ck yêu vk • Cảm ơn vk vì đã luôn bên ck • Mãi bên nhau 💖', W / 2, 1165);
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    document.getElementById('renderCardBtn').addEventListener('click', generateQrCard);
+    qrUrlInput.addEventListener('input', generateQrCard);
+    cardTitleInput.addEventListener('input', generateQrCard);
+    cardSubInput.addEventListener('input', generateQrCard);
+
+    document.getElementById('downloadCardBtn').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'Thiep-QR-Ky-Niem-5-Nam-20-10.png';
+      link.href = posterCanvas.toDataURL('image/png');
+      link.click();
+    });
+
+    window.onload = generateQrCard;
+  </script>
+</body>
+</html>
